@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private configService: ConfigService) { }
+  constructor(private mailService: MailService) { }
 
-  getUsers() {
-    return this.configService.getOrThrow<string>('MONGO_DB_URL');
+  async getUsers() {
+    await this.mailService.sendUserConfirmation();
+    return 'Mail send successfully';
   }
 }
