@@ -14,6 +14,14 @@
         "project": "./tsconfig.json"
     },
     "rules": {
+        "no-underscore-dangle": [
+            "error",
+            {
+                "allow": [
+                    "_id"
+                ]
+            }
+        ],
         "import/prefer-default-export": "off",
         "class-methods-use-this": "off",
         "import/no-extraneous-dependencies": "off"
