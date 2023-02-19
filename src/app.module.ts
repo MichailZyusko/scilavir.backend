@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './modules/mail/mail.module';
+import { TokenModule } from './modules/token/token.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -13,6 +15,8 @@ import { UsersModule } from './modules/users/users.module';
     MongooseModule.forRoot(process.env?.MONGO_DB_URL),
     MailModule,
     UsersModule,
+    TokenModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

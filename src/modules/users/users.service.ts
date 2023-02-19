@@ -43,6 +43,10 @@ export class UsersService {
     return user;
   }
 
+  async findOne(userProps: Partial<User>) {
+    return this.UserModel.findOne(userProps);
+  }
+
   async getUsers() {
     return this.UserModel.find();
   }

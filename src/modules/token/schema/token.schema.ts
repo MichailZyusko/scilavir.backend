@@ -1,18 +1,20 @@
 /* eslint-disable @typescript-eslint/indent */
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { User } from 'src/modules/users/schema/user.schema';
+import { HydratedDocument } from 'mongoose';
 
 export type TokenDocument = HydratedDocument<Token>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Token {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  user: User;
-
   @Prop({ required: true })
   refreshToken: string;
+
+  @Prop({ default: Date.now() })
+  createdAt: Date;
+
+  @Prop({ default: Date.now() })
+  updatedAt: Date;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);
