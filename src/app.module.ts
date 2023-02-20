@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './modules/auth/auth.module';
+import { GoodsModule } from './modules/goods/goods.module';
 import { MailModule } from './modules/mail/mail.module';
 import { TokenModule } from './modules/token/token.module';
 import { UsersModule } from './modules/users/users.module';
@@ -17,6 +18,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     TokenModule,
     AuthModule,
+    GoodsModule,
   ],
   controllers: [],
   providers: [],

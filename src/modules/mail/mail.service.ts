@@ -8,18 +8,19 @@ export class MailService {
 
   async sendUserActivationLink({ link, user }: { link: string, user: UserDocument }) {
     await this.mailerService.sendMail({
-      to: 'michail.zyusko@gmail.com',
+      to: user.email,
       subject: 'Welcome to Nice App! Confirm your Email',
       html: `
-      <div>
-        <p>Hey <b>${user.firstName} ${user.lastName}</b>,</p>
-        <p>
-          Welcome to Scilavir
-        </p>
-        <p>
-          For verification press on this <a href="${link}">link</a>!
-        </p>
-    </div>`,
+        <div>
+          <p>Hey <b>${user.firstName} ${user.lastName}</b>,</p>
+          <p>
+            Welcome to Scilavir
+          </p>
+          <p>
+            For verification press on this <a href="${link}">link</a>!
+          </p>
+        </div>
+      `,
     });
   }
 }
