@@ -5,6 +5,5 @@ export type Tokens = {
 
 export type Payload = {
   sub: string,
-  email: string,
   refreshToken: string,
 };

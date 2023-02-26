@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Types } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import { SignInDto } from './dto/sign-in.dto';
 import { TokenService } from '../token/token.service';
 import { Tokens } from '../token/types';
@@ -18,10 +18,7 @@ export class AuthService {
   async signUp(createUserDto: CreateUserDto): Promise<Tokens> {
     const user = await this.userService.create(createUserDto);
 
-    const tokens = await this.tokenService.generateTokens({
-      userId: user._id,
-      email: user.email,
-    });
+    const tokens = await this.tokenService.generateTokens({ userId: user._id });
     const token = await this.tokenService.save({
       userId: user._id,
       refreshToken: tokens.refreshToken,
@@ -39,7 +36,7 @@ export class AuthService {
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) throw new BadRequestException('Password or email are incorrect');
 
-    const tokens = await this.tokenService.generateTokens({ userId: user._id, email });
+    const tokens = await this.tokenService.generateTokens({ userId: user._id });
     await this.tokenService.save({
       userId: user._id,
       refreshToken: tokens.refreshToken,
@@ -48,19 +45,16 @@ export class AuthService {
     return tokens;
   }
 
-  async signOut({ sub }: { sub: string }) {
-    const userObjectId = new Types.ObjectId(sub);
-
-    await this.tokenService.revokeTokens({ userId: userObjectId });
+  async signOut({ _id: userId }: { _id: Types.ObjectId }) {
+    await this.tokenService.revokeTokens({ userId });
   }
 
   async refreshTokens({
     userId,
     checkingRefreshToken,
-    email,
   }: RefreshDto): Promise<Tokens> {
-    const userObjectId = new Types.ObjectId(userId);
-    const { refreshToken } = await this.tokenService.getRefreshToken({ userId: userObjectId });
+    const user = await this.userService.findById(userId);
+    const { refreshToken } = await this.tokenService.getRefreshToken({ userId: user._id });
 
     const refreshTokenMatches = await bcrypt.compare(
       checkingRefreshToken,
@@ -68,8 +62,8 @@ export class AuthService {
     );
     if (!refreshTokenMatches) throw new ForbiddenException('RefreshToken is incorrect. Access Denied');
 
-    const tokens = await this.tokenService.generateTokens({ userId: userObjectId, email });
-    await this.tokenService.save({ userId: userObjectId, refreshToken: tokens.refreshToken });
+    const tokens = await this.tokenService.generateTokens({ userId: user._id });
+    await this.tokenService.save({ userId: user._id, refreshToken: tokens.refreshToken });
 
     return tokens;
   }

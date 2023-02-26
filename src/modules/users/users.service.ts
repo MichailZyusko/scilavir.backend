@@ -47,6 +47,10 @@ export class UsersService {
     return this.UserModel.findOne(userProps);
   }
 
+  async findById(userId: string) {
+    return this.UserModel.findById({ _id: userId });
+  }
+
   async getUsers() {
     return this.UserModel.find();
   }

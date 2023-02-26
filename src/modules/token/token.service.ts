@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
@@ -17,12 +17,11 @@ export class TokenService {
     private jwtService: JwtService,
   ) { }
 
-  async generateTokens({ userId, email }: GenerateTokenDto): Promise<Tokens> {
+  async generateTokens({ userId }: GenerateTokenDto): Promise<Tokens> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
           sub: userId,
-          email,
         },
         {
           secret: process.env.JWT_ACCESS_SECRET,
@@ -32,7 +31,6 @@ export class TokenService {
       this.jwtService.signAsync(
         {
           sub: userId,
-          email,
         },
         {
           secret: process.env.JWT_REFRESH_SECRET,
@@ -66,11 +64,18 @@ export class TokenService {
   }
 
   async getRefreshToken({ userId }: { userId: Types.ObjectId }) {
-    const { token: { refreshToken } } = await this.UserModel
+    const user = await this.UserModel
       .findById(userId)
       .populate('token');
+
+    if (!user) {
+      throw new BadRequestException(`User w/ id: ${userId} doesn't exist`);
+    }
+
+    const { token: { refreshToken } = {} } = user;
+
     if (!refreshToken) {
-      throw new Error(`User w/ id: ${userId} doesn't exist`);
+      throw new ForbiddenException('Access denied');
     }
 
     return { refreshToken };
