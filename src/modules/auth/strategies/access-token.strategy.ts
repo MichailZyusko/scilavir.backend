@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from 'src/modules/users/users.service';
+import { type Request } from 'express';
 
 type JwtPayload = {
   sub: string;
@@ -11,7 +12,10 @@ type JwtPayload = {
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly usersService: UsersService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        AccessTokenStrategy.extractFromCookie,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       secretOrKey: process.env?.JWT_ACCESS_SECRET,
     });
   }
@@ -22,5 +26,15 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user) throw new ForbiddenException('Access dined');
 
     return user;
+  }
+
+  private static extractFromCookie(req: Request): string | null {
+    const { cookies } = req;
+    const { accessToken } = cookies || {};
+    if (!accessToken) {
+      return null;
+    }
+
+    return accessToken;
   }
 }

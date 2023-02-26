@@ -1,6 +1,7 @@
 import {
-  Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, UseGuards,
+  Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, Res, UseGuards,
 } from '@nestjs/common';
+import { type Response } from 'express';
 import { Payload } from '../token/types';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserDocument } from '../users/schema/user.schema';
@@ -15,32 +16,61 @@ export class AuthController {
 
   @HttpCode(HttpStatus.CREATED)
   @Post('sign-up')
-  signUp(@Body() createUserDto: CreateUserDto) {
-    return this.authService.signUp(createUserDto);
+  async signUp(
+    @Res({ passthrough: true }) res: Response,
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    const { accessToken, refreshToken } = await this.authService.signUp(createUserDto);
+
+    res.cookie('a-token', accessToken, { httpOnly: true });
+    res.cookie('r-token', refreshToken, { httpOnly: true });
+
+    return { accessToken, refreshToken };
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('sign-in')
-  signIn(@Body() logInDto: SignInDto) {
-    return this.authService.signIn(logInDto);
+  async signIn(
+    @Res({ passthrough: true }) res: Response,
+    @Body() logInDto: SignInDto,
+  ) {
+    const { accessToken, refreshToken } = await this.authService.signIn(logInDto);
+
+    res.cookie('a-token', accessToken, { httpOnly: true });
+    res.cookie('r-token', refreshToken, { httpOnly: true });
+
+    return { accessToken, refreshToken };
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AccessTokenGuard)
   @Delete('sign-out')
-  signOut(@Req() req: Request & { user: UserDocument }) {
-    return this.authService.signOut(req.user);
+  async signOut(
+    @Req() req: Request & { user: UserDocument },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.signOut(req.user);
+
+    res.cookie('token', '', { expires: new Date() });
   }
 
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  refreshTokens(@Req() req: Request & { user: Payload }) {
+  async refreshTokens(
+    @Req() req: Request & { user: Payload },
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { sub: userId, refreshToken } = req.user;
 
-    return this.authService.refreshTokens({
+    const { accessToken, refreshToken: newRefreshToken } = await this.authService.refreshTokens({
       userId,
       checkingRefreshToken: refreshToken,
     });
+
+    res.cookie('a-token', accessToken, { httpOnly: true });
+    res.cookie('r-token', newRefreshToken, { httpOnly: true });
+
+    return { accessToken, refreshToken };
   }
 }
