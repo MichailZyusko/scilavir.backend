@@ -14,8 +14,11 @@ export class GoodsService {
     return this.GoodModel.find();
   }
 
-  save(createGoodDto: CreateGoodDto) {
-    const good = new this.GoodModel(createGoodDto);
+  async save(createGoodDto: CreateGoodDto, images: Express.Multer.File[]) {
+    const good = new this.GoodModel({
+      ...createGoodDto,
+      images: images.map((img) => img.filename),
+    });
 
     return good.save();
   }

@@ -37,5 +37,5 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Public folder
+# Files folder
 public

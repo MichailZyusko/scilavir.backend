@@ -1,6 +1,7 @@
 import {
-  Body, Controller, Get, Post,
+  Body, Controller, Get, Post, UploadedFiles, UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateGoodDto } from './dto/create-good.dto';
 import { GoodsService } from './goods.service';
 
@@ -14,7 +15,11 @@ export class GoodsController {
   }
 
   @Post()
-  create(@Body() createGoodDto: CreateGoodDto) {
-    return this.goodsService.save(createGoodDto);
+  @UseInterceptors(FilesInterceptor('images', 5))
+  create(
+    @Body() createGoodDto: CreateGoodDto,
+    @UploadedFiles() images: Express.Multer.File[],
+  ) {
+    return this.goodsService.save(createGoodDto, images);
   }
 }

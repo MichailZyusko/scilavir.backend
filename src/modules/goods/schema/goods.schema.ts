@@ -14,7 +14,7 @@ export class Good {
   description: string;
 
   @Prop()
-  img: string;
+  images: string[];
 
   @Prop()
   price: number;

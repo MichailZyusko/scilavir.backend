@@ -3,7 +3,5 @@ export class CreateGoodDto {
 
   description: string;
 
-  img: string;
-
   price: number;
 }
