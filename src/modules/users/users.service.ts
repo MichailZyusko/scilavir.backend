@@ -34,7 +34,7 @@ export class UsersService {
     await user.save();
 
     const webAppLink = this.configService.getOrThrow<string>('WEB_APP_LINK');
-    const activationLink = `${webAppLink}/${user._id}`;
+    const activationLink = `${webAppLink}/verification/${user._id}`;
 
     await this.mailService.sendUserActivationLink({
       link: activationLink,
