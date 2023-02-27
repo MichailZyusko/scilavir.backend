@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User, UserDocument } from './schema/user.schema';
 import { MailService } from '../mail/mail.service';
+import { PatchUserDto } from './dto/patch-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -49,6 +50,14 @@ export class UsersService {
 
   async findById(userId: string) {
     return this.UserModel.findById({ _id: userId });
+  }
+
+  async patch(id: string, user: PatchUserDto) {
+    return this.UserModel.updateOne(
+      { _id: id },
+      user,
+      { upsert: true },
+    );
   }
 
   async getUsers() {
