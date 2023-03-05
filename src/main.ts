@@ -7,10 +7,11 @@ async function bootstrap() {
   // TODO: Set up `cors` properly
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
-      origin: ['https://scilavir-frontend.vercel.app/auth/sign-in'],
+      origin: ['https://scilavir-frontend.vercel.app'],
       methods: ['POST'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
+      optionsSuccessStatus: 200,
     },
   });
 
