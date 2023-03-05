@@ -6,7 +6,7 @@ async function bootstrap() {
   // TODO: Set up `cors` properly
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: '*',
+      origin: ['https://scilavir-frontend.vercel.app', '*'],
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
       preflightContinue: false,
       optionsSuccessStatus: 204,
