@@ -6,6 +6,6 @@ import {
 export class AppController {
   @Get('/ping')
   getUsers() {
-    return 'Pong 1';
+    return 'Pong';
   }
 }

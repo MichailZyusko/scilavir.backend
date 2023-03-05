@@ -1,8 +1,8 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UsersService } from 'src/modules/users/users.service';
 import { type Request } from 'express';
+import { UsersService } from '../../users/users.service';
 
 type JwtPayload = {
   sub: string;

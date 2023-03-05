@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { randomUUID } from 'crypto';
 import { diskStorage } from 'multer';
-import { PATH_TO_STATIC_FOLDER } from 'src/constants';
+import { PATH_TO_STATIC_FOLDER } from '../../constants';
 import { GoodsController } from './goods.controller';
 import { GoodsService } from './goods.service';
 import { Good, GoodSchema } from './schema/goods.schema';
