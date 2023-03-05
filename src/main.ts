@@ -6,10 +6,14 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   // TODO: Set up `cors` properly
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    cors: true,
+    cors: {
+      origin: ['https://scilavir-frontend.vercel.app/auth/sign-in'],
+      methods: ['POST'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    },
   });
 
-  app.enableCors();
   app.use(cookieParser());
 
   await app.listen(3001);
