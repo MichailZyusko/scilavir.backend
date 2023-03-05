@@ -6,7 +6,11 @@ async function bootstrap() {
   // TODO: Set up `cors` properly
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
-  app.enableCors();
+  app.enableCors({
+    allowedHeaders: '*',
+    origin: '*',
+    credentials: true,
+  });
 
   await app.listen(3001);
 }
