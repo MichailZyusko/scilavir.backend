@@ -1,7 +1,6 @@
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 const origin = process.env.NODE_ENV === 'prod' ? ['https://scilavir-frontend.vercel.app'] : ['http://localhost:3000'];
-console.log('🚀 ~ file: cors.ts:4 ~ origin:', origin);
 
 export const corsOptions: CorsOptions = {
   origin,

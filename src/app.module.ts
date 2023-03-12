@@ -9,6 +9,7 @@ import { HttpErrorFilter } from './errors/http-error.filter';
 import { AuthModule } from './modules/auth/auth.module';
 import { GoodsModule } from './modules/goods/goods.module';
 import { MailModule } from './modules/mail/mail.module';
+import { OrdersModule } from './modules/orders/orders.module';
 import { TokenModule } from './modules/token/token.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -27,6 +28,7 @@ import { UsersModule } from './modules/users/users.module';
     TokenModule,
     AuthModule,
     GoodsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
