@@ -4,13 +4,13 @@ import { MulterModule } from '@nestjs/platform-express';
 import { randomUUID } from 'crypto';
 import { diskStorage } from 'multer';
 import { PATH_TO_STATIC_FOLDER } from '../../constants';
-import { GoodsController } from './goods.controller';
-import { GoodsService } from './goods.service';
-import { Good, GoodSchema } from './schema/goods.schema';
+import { ProductsController } from './Products.controller';
+import { ProductsService } from './Products.service';
+import { Product, ProductSchema } from './schema/products.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Good.name, schema: GoodSchema }]),
+    MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }]),
     MulterModule.register({
       storage: diskStorage({
         destination: PATH_TO_STATIC_FOLDER,
@@ -24,7 +24,7 @@ import { Good, GoodSchema } from './schema/goods.schema';
       }),
     }),
   ],
-  controllers: [GoodsController],
-  providers: [GoodsService],
+  controllers: [ProductsController],
+  providers: [ProductsService],
 })
-export class GoodsModule { }
+export class ProductsModule { }

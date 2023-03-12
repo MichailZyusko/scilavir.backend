@@ -3,10 +3,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type GoodDocument = HydratedDocument<Good>;
+export type ProductDocument = HydratedDocument<Product>;
 
 @Schema()
-export class Good {
+export class Product {
   @Prop()
   name: string;
 
@@ -26,4 +26,4 @@ export class Good {
   updatedAt: Date;
 }
 
-export const GoodSchema = SchemaFactory.createForClass(Good);
+export const ProductSchema = SchemaFactory.createForClass(Product);

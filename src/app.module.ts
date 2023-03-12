@@ -7,7 +7,7 @@ import { AppController } from './app.controller';
 import { PATH_TO_STATIC_FOLDER } from './constants';
 import { HttpErrorFilter } from './errors/http-error.filter';
 import { AuthModule } from './modules/auth/auth.module';
-import { GoodsModule } from './modules/goods/goods.module';
+import { ProductsModule } from './modules/products/Products.module';
 import { MailModule } from './modules/mail/mail.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { TokenModule } from './modules/token/token.module';
@@ -27,7 +27,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     TokenModule,
     AuthModule,
-    GoodsModule,
+    ProductsModule,
     OrdersModule,
   ],
   controllers: [AppController],

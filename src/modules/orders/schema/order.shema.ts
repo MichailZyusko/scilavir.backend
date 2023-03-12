@@ -13,12 +13,12 @@ export type OrderDocument = HydratedDocument<Order>;
 export class Order {
   @Prop(raw([{
     count: Number,
-    goods: {
+    product: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Good',
+      ref: 'Product',
     },
   }]))
-  goods: [TOrder];
+  details: [TOrder];
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   user: User;

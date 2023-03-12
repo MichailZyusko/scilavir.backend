@@ -1,4 +1,4 @@
-export class CreateGoodDto {
+export class CreateProductDto {
   name: string;
 
   description: string;

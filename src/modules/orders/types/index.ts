@@ -1,6 +1,6 @@
-import { Good } from 'src/modules/goods/schema/goods.schema';
+import { Product } from 'src/modules/products/schema/products.schema';
 
 export type TOrder = {
   count: number,
-  goods: Good,
+  product: Product,
 };

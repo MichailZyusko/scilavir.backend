@@ -6,26 +6,26 @@ import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { Role } from '../users/enums/users.enums';
-import { CreateGoodDto } from './dto/create-good.dto';
-import { GoodsService } from './goods.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { ProductsService } from './Products.service';
 
-@Controller('goods')
-export class GoodsController {
-  constructor(private readonly goodsService: GoodsService) { }
+@Controller('Products')
+export class ProductsController {
+  constructor(private readonly productsService: ProductsService) { }
 
   @Get()
   find() {
-    return this.goodsService.find();
+    return this.productsService.find();
   }
 
   @Post()
-  @UseGuards(AccessTokenGuard, RolesGuard)
-  @Roles(Role.admin)
+  // @UseGuards(AccessTokenGuard, RolesGuard)
+  // @Roles(Role.admin)
   @UseInterceptors(FilesInterceptor('images', 5))
   create(
-    @Body() createGoodDto: CreateGoodDto,
+    @Body() createProductDto: CreateProductDto,
     @UploadedFiles() images: Express.Multer.File[],
   ) {
-    return this.goodsService.save(createGoodDto, images);
+    return this.productsService.save(createProductDto, images);
   }
 }

@@ -21,10 +21,10 @@ export class OrdersService {
     await order.save();
 
     const populatedOrder = await order.populate({
-      path: 'goods',
+      path: 'details',
       populate: {
-        path: 'goods',
-        model: 'Good',
+        path: 'product',
+        model: 'Product',
       },
     });
 
@@ -35,10 +35,10 @@ export class OrdersService {
 
   async findAll() {
     const orders = await this.OrderModel.find().populate({
-      path: 'goods',
+      path: 'details',
       populate: {
-        path: 'goods',
-        model: 'Good',
+        path: 'product',
+        model: 'Product',
       },
     });
 

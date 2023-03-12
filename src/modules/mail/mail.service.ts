@@ -27,6 +27,8 @@ export class MailService {
   }
 
   async sendNewOrderAlert({ order }: { order: OrderDocument }) {
+    console.log('🚀 ~ file: mail.service.ts:30 ~ MailService ~ sendNewOrderAlert ~ order:', order);
+
     await this.mailerService.sendMail({
       to: SCILAVIR_EMAIL,
       subject: 'New order in web app',
@@ -36,11 +38,11 @@ export class MailService {
             <b>${order.user.firstName} ${order.user.lastName}</b> make a new order:
           </p>
           <div>
-            ${order.goods
-          .map((good) => {
-            const goodTemplate = `<p>${good.goods.name} x${good.count}</p>`;
+            ${order.details
+          .map(({ count, product }) => {
+            const ProductTemplate = `<p>${product.name} x${count}</p>`;
 
-            return goodTemplate;
+            return ProductTemplate;
           })
           .join(', \n')
         }
