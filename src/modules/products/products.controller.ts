@@ -19,8 +19,8 @@ export class ProductsController {
   }
 
   @Post()
-  // @UseGuards(AccessTokenGuard, RolesGuard)
-  // @Roles(Role.admin)
+  @UseGuards(AccessTokenGuard, RolesGuard)
+  @Roles(Role.admin)
   @UseInterceptors(FilesInterceptor('images', 5))
   create(
     @Body() createProductDto: CreateProductDto,

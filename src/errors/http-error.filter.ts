@@ -3,7 +3,10 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Inject,
+  LoggerService,
 } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 type ApiError = {
   httpCode: number;
@@ -29,6 +32,10 @@ const generateError = (e: any): ApiError => {
 
 @Catch()
 export class HttpErrorFilter implements ExceptionFilter {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+  ) { }
+
   catch(exception: Error, host: ArgumentsHost): any {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest();
@@ -36,10 +43,8 @@ export class HttpErrorFilter implements ExceptionFilter {
 
     const errorResponse = generateError(exception);
 
-    console.error(
-      `request method: ${request.method} \nrequest url${request.url}\nexception:`,
-      exception,
-    );
+    this.logger.warn(`${request.method} ${request.url}`);
+    this.logger.error(exception);
 
     response.status(errorResponse.httpCode).json(errorResponse);
   }
