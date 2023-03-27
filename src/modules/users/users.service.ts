@@ -45,11 +45,11 @@ export class UsersService {
   }
 
   async findOne(userProps: Partial<User>) {
-    return this.UserModel.findOne(userProps);
+    return this.UserModel.findOne(userProps).lean();
   }
 
   async findById(userId: string) {
-    return this.UserModel.findById({ _id: userId });
+    return this.UserModel.findById({ _id: userId }).lean();
   }
 
   async patch(id: string, user: PatchUserDto) {
@@ -61,6 +61,6 @@ export class UsersService {
   }
 
   async getUsers() {
-    return this.UserModel.find();
+    return this.UserModel.find().lean();
   }
 }
