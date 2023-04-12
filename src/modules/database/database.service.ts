@@ -11,6 +11,11 @@ export class DatabaseService {
     this.database = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_API_KEY,
+      {
+        auth: {
+          autoRefreshToken: true,
+        },
+      },
     );
   }
 
@@ -41,8 +46,10 @@ export class DatabaseService {
     }
   }
 
-  async refresh() {
-    const { data, error } = await this.database.auth.refreshSession();
+  async refresh(refreshToken) {
+    const { data, error } = await this.database.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
 
     if (error) {
       throw error;

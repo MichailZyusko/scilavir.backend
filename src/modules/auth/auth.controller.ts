@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, HttpCode, HttpStatus, Post, UseGuards,
+  Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
@@ -40,10 +40,15 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(SupabaseGuard)
+  // @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  async refreshTokens() {
-    return this.authService.refreshTokens();
+  async refreshTokens(
+    @Req() req: Request,
+  ) {
+    const { authorization } = req.headers as any;
+    const refreshToken = authorization.replace('Bearer', '').trim();
+
+    return this.authService.refreshTokens(refreshToken);
 
     // res.cookie('a-token', accessToken, { httpOnly: true });
     // res.cookie('r-token', newRefreshToken, { httpOnly: true });

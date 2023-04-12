@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Post, UploadedFiles, UseGuards, UseInterceptors,
+  Body, Controller, Get, Param, Post, UploadedFiles, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from '../../guards/role.guard';
@@ -17,9 +17,13 @@ export class ProductsController {
   ) { }
 
   @Get()
-  @UseGuards(SupabaseGuard)
   find() {
     return this.productsService.find();
+  }
+
+  @Get('/:id')
+  findById(@Param('id') id: string) {
+    return this.productsService.findById(id);
   }
 
   @Post()

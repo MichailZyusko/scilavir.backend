@@ -16,6 +16,17 @@ export class ProductsService {
     return data;
   }
 
+  async findById(id: string) {
+    const { data } = await this.databaseService.database
+      .from('products')
+      .select()
+      .eq('id', id)
+      .single()
+      .throwOnError();
+
+    return data;
+  }
+
   async save(createProductDto: CreateProductDto, images: Express.Multer.File[]) {
     const productId = randomUUID();
 

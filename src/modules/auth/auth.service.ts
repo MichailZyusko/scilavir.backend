@@ -41,8 +41,8 @@ export class AuthService {
     return this.databaseService.signOut();
   }
 
-  async refreshTokens(): Promise<Tokens> {
-    const { session } = await this.databaseService.refresh();
+  async refreshTokens(refreshToken): Promise<Tokens> {
+    const { session } = await this.databaseService.refresh(refreshToken);
 
     return {
       accessToken: session.access_token,
