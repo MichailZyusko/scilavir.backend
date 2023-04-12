@@ -1,76 +1,51 @@
 import {
-  Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, Res, UseGuards,
+  Body, Controller, Delete, HttpCode, HttpStatus, Post, UseGuards,
 } from '@nestjs/common';
-import { type Response } from 'express';
-import { Payload } from '../token/types';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { UserDocument } from '../users/schema/user.schema';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
-import { AccessTokenGuard } from './guards/access-token.guard';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { SupabaseGuard } from './guards/supabase-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private readonly authService: AuthService) { }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('sign-up')
-  async signUp(
-    @Res({ passthrough: true }) res: Response,
-    @Body() createUserDto: CreateUserDto,
-  ) {
-    const { accessToken, refreshToken } = await this.authService.signUp(createUserDto);
+  async signUp(@Body() createUserDto: CreateUserDto) {
+    return this.authService.signUp(createUserDto);
 
-    res.cookie('a-token', accessToken, { httpOnly: true });
-    res.cookie('r-token', refreshToken, { httpOnly: true });
-
-    return { accessToken, refreshToken };
+    // res.cookie('a-token', accessToken, { httpOnly: true });
+    // res.cookie('r-token', refreshToken, { httpOnly: true });
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('sign-in')
-  async signIn(
-    @Res({ passthrough: true }) res: Response,
-    @Body() logInDto: SignInDto,
-  ) {
-    const { accessToken, refreshToken } = await this.authService.signIn(logInDto);
+  async signIn(@Body() logInDto: SignInDto) {
+    return this.authService.signIn(logInDto);
 
-    res.cookie('a-token', accessToken, { httpOnly: true });
-    res.cookie('r-token', refreshToken, { httpOnly: true });
+    // res.cookie('a-token', accessToken, { httpOnly: true });
+    // res.cookie('r-token', refreshToken, { httpOnly: true });
 
-    return { accessToken, refreshToken };
+    // return { accessToken, refreshToken };
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(SupabaseGuard)
   @Delete('sign-out')
-  async signOut(
-    @Req() req: Request & { user: UserDocument },
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    await this.authService.signOut(req.user);
+  async signOut() {
+    await this.authService.signOut();
 
-    res.cookie('token', '', { expires: new Date() });
+    // res.cookie('token', '', { expires: new Date() });
   }
 
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RefreshTokenGuard)
+  @UseGuards(SupabaseGuard)
   @Post('refresh')
-  async refreshTokens(
-    @Req() req: Request & { user: Payload },
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { sub: userId, refreshToken } = req.user;
+  async refreshTokens() {
+    return this.authService.refreshTokens();
 
-    const { accessToken, refreshToken: newRefreshToken } = await this.authService.refreshTokens({
-      userId,
-      checkingRefreshToken: refreshToken,
-    });
-
-    res.cookie('a-token', accessToken, { httpOnly: true });
-    res.cookie('r-token', newRefreshToken, { httpOnly: true });
-
-    return { accessToken, refreshToken };
+    // res.cookie('a-token', accessToken, { httpOnly: true });
+    // res.cookie('r-token', newRefreshToken, { httpOnly: true });
   }
 }

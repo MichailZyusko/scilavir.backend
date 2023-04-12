@@ -1,11 +1,12 @@
 import {
-  Body, Controller, Get, Param, Patch, Post, Req, UseGuards,
+  Body, Controller, Get, Param, Patch, Post, UseGuards,
 } from '@nestjs/common';
+import { CurrentUser } from 'src/decorators/user.decorator';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PatchUserDto } from './dto/patch-user.dto';
 import { UsersService } from './users.service';
-import { User } from './schema/user.schema';
+import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -18,10 +19,8 @@ export class UsersController {
   }
 
   @Get('self')
-  @UseGuards(AccessTokenGuard)
-  getMyUser(@Req() req: Request & { user: User }) {
-    const { user: { password, token, ...user } } = req;
-
+  @UseGuards(SupabaseGuard)
+  getMyUser(@CurrentUser() user: any) {
     return user;
   }
 

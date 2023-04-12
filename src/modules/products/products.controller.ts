@@ -4,22 +4,26 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
-import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { Role } from '../users/enums/users.enums';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './Products.service';
+import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
-@Controller('Products')
+@Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(
+    private readonly productsService: ProductsService,
+
+  ) { }
 
   @Get()
+  @UseGuards(SupabaseGuard)
   find() {
     return this.productsService.find();
   }
 
   @Post()
-  @UseGuards(AccessTokenGuard, RolesGuard)
+  @UseGuards(SupabaseGuard, RolesGuard)
   @Roles(Role.admin)
   @UseInterceptors(FilesInterceptor('images', 5))
   create(

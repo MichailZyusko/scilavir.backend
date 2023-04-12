@@ -14,6 +14,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { TokenModule } from './modules/token/token.module';
 import { UsersModule } from './modules/users/users.module';
 import { winstonConf } from './constants/winston.config';
+import { DatabaseModule } from './modules/database/databse.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { winstonConf } from './constants/winston.config';
     AuthModule,
     ProductsModule,
     OrdersModule,
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [
