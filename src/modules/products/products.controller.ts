@@ -11,10 +11,7 @@ import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('products')
 export class ProductsController {
-  constructor(
-    private readonly productsService: ProductsService,
-
-  ) { }
+  constructor(private readonly productsService: ProductsService) { }
 
   @Get()
   find() {

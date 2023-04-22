@@ -1,28 +1,20 @@
 import {
-  Controller, Get, Post, Body, Req, UseGuards,
+  Controller, Post, UseGuards,
 } from '@nestjs/common';
+import { CurrentUser } from 'src/decorators/user.decorator';
+import { User } from '@supabase/supabase-js';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { AccessTokenGuard } from '../auth/guards/access-token.guard';
-import { UserDocument } from '../users/schema/user.schema';
+import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(SupabaseGuard)
   create(
-    @Body() createOrderDto: CreateOrderDto,
-    @Req() req: Request & { user: UserDocument },
+    @CurrentUser() user: User,
   ) {
-    const { user } = req;
-
-    return this.ordersService.create(createOrderDto, user);
-  }
-
-  @Get()
-  findAll() {
-    return this.ordersService.findAll();
+    return this.ordersService.create();
   }
 }

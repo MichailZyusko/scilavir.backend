@@ -11,29 +11,20 @@ export class DatabaseService {
     this.database = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_API_KEY,
-      {
-        auth: {
-          autoRefreshToken: true,
-        },
-      },
     );
   }
 
   async signUp(credentials: SignUpWithPasswordCredentials) {
     const { error } = await this.database.auth.signUp(credentials);
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
   }
 
   async signIn(credentials: SignInWithPasswordCredentials) {
     const { data, error } = await this.database.auth
       .signInWithPassword(credentials);
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return data;
   }
@@ -41,19 +32,15 @@ export class DatabaseService {
   async signOut() {
     const { error } = await this.database.auth.signOut();
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
   }
 
-  async refresh(refreshToken) {
+  async refresh(refreshToken: string) {
     const { data, error } = await this.database.auth.refreshSession({
       refresh_token: refreshToken,
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return data;
   }

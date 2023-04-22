@@ -17,6 +17,8 @@ export class AuthController {
 
     // res.cookie('a-token', accessToken, { httpOnly: true });
     // res.cookie('r-token', refreshToken, { httpOnly: true });
+
+    // return { accessToken, refreshToken };
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -42,9 +44,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   // @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  async refreshTokens(
-    @Req() req: Request,
-  ) {
+  async refreshTokens(@Req() req: Request) {
     const { authorization } = req.headers as any;
     const refreshToken = authorization.replace('Bearer', '').trim();
 

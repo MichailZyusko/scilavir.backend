@@ -17,7 +17,6 @@ export class SupabaseStrategy extends PassportStrategy(
           autoRefreshToken: true,
         },
       },
-      // supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET,
       extractor: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }

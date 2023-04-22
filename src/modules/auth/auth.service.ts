@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
-import { Tokens } from '../token/types';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { DatabaseService } from '../database/database.service';
 import { Role } from '../users/enums/users.enums';
@@ -10,11 +9,14 @@ export class AuthService {
   constructor(private readonly databaseService: DatabaseService) { }
 
   async signUp(createUserDto: CreateUserDto) {
-    const { email, password, ...data } = createUserDto;
+    const {
+      email, password, phone, ...data
+    } = createUserDto;
 
     await this.databaseService.signUp({
       email,
       password,
+      phone,
       options: {
         data: {
           ...data,
@@ -41,7 +43,7 @@ export class AuthService {
     return this.databaseService.signOut();
   }
 
-  async refreshTokens(refreshToken): Promise<Tokens> {
+  async refreshTokens(refreshToken: string) {
     const { session } = await this.databaseService.refresh(refreshToken);
 
     return {
