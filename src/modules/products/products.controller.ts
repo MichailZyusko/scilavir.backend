@@ -1,15 +1,18 @@
 import {
-  Body, Controller, Get, Post, UploadedFiles, UseGuards, UseInterceptors,
+  Body, Controller, Delete, Get, Param,
+  Post, UploadedFiles, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { CurrentUser } from 'src/decorators/user.decorator';
+import { User } from '@supabase/supabase-js';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
-import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { Role } from '../users/enums/users.enums';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './Products.service';
+import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
-@Controller('Products')
+@Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
@@ -18,8 +21,37 @@ export class ProductsController {
     return this.productsService.find();
   }
 
+  @Get('/favorites')
+  @UseGuards(SupabaseGuard)
+  findFavorites(@CurrentUser() user: User) {
+    return this.productsService.findFavorites(user);
+  }
+
+  @Post('/favorites/:productId')
+  @UseGuards(SupabaseGuard)
+  addToFavorites(
+    @Param('productId') productId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.productsService.addToFavorites(user, productId);
+  }
+
+  @Delete('/favorites/:productId')
+  @UseGuards(SupabaseGuard)
+  deleteFromFavorites(
+    @Param('productId') productId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.productsService.removeFromFavorites(user, productId);
+  }
+
+  @Get('/:id')
+  findById(@Param('id') id: string) {
+    return this.productsService.findById(id);
+  }
+
   @Post()
-  @UseGuards(AccessTokenGuard, RolesGuard)
+  @UseGuards(SupabaseGuard, RolesGuard)
   @Roles(Role.admin)
   @UseInterceptors(FilesInterceptor('images', 5))
   create(

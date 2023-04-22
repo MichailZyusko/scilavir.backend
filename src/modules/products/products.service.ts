@@ -1,25 +1,90 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { randomUUID } from 'crypto';
+import { User } from '@supabase/supabase-js';
 import { CreateProductDto } from './dto/create-product.dto';
-import { Product, ProductDocument } from './schema/products.schema';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(
-    @InjectModel(Product.name) private ProductModel: Model<ProductDocument>,
-  ) { }
+  constructor(private readonly databaseService: DatabaseService) { }
 
-  find() {
-    return this.ProductModel.find();
+  async find() {
+    const { data } = await this.databaseService.database
+      .from('products')
+      .select()
+      .throwOnError();
+
+    return data;
+  }
+
+  async findById(id: string) {
+    const { data } = await this.databaseService.database
+      .from('products')
+      .select()
+      .eq('id', id)
+      .single()
+      .throwOnError();
+
+    return data;
+  }
+
+  async findFavorites({ id }: User) {
+    const { data } = await this.databaseService.database
+      .from('favorites')
+      .select('products (*)')
+      .eq('user_id', id)
+      .throwOnError();
+
+    return data.map((item) => item.products);
+  }
+
+  async addToFavorites({ id }: User, productId: string) {
+    const { data } = await this.databaseService.database
+      .from('favorites')
+      .insert([{
+        user_id: id,
+        products_id: productId,
+      }])
+      .throwOnError();
+
+    return data;
+  }
+
+  async removeFromFavorites({ id }: User, productId: string) {
+    const { data } = await this.databaseService.database
+      .from('favorites')
+      .delete()
+      .eq('user_id', id)
+      .eq('products_id', productId)
+      .throwOnError();
+
+    return data;
   }
 
   async save(createProductDto: CreateProductDto, images: Express.Multer.File[]) {
-    const product = new this.ProductModel({
-      ...createProductDto,
-      images: images.map((img) => img.filename),
-    });
+    const productId = randomUUID();
 
-    return product.save();
+    await Promise.allSettled(images.map(async (image) => {
+      const { data, error } = await this.databaseService.database
+        .storage
+        .from('backets')
+        .upload(`images/${productId}/${image.originalname}`, image.buffer);
+
+      if (error) {
+        console.log(error);
+      }
+
+      return data;
+    }));
+
+    const { data } = await this.databaseService.database
+      .from('products')
+      .insert({
+        ...createProductDto,
+        id: productId,
+        images: images.map((img) => `https://hljgruyjewkbrmyedjik.supabase.co/storage/v1/object/public/backets/images/${productId}/${img.originalname}`),
+      });
+
+    return data;
   }
 }

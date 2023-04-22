@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { TokenModule } from '../token/token.module';
-import { AccessTokenStrategy } from './strategies/access-token.strategy';
-import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
+import { SupabaseStrategy } from './strategies/supabase-auth.strategy';
+import { DatabaseModule } from '../database/databse.module';
 
 @Module({
-  imports: [
-    UsersModule,
-    TokenModule,
+  imports: [DatabaseModule],
+  providers: [
+    AuthService,
+    SupabaseStrategy,
   ],
-  providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
   controllers: [AuthController],
 })
 export class AuthModule { }
