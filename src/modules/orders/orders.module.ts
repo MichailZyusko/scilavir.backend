@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { MailModule } from '../mail/mail.module';
-import { DatabaseModule } from '../database/databse.module';
+import { DatabaseModule } from '../database/database.module';
 
 @Module({
   imports: [
