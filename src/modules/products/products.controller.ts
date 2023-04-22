@@ -1,7 +1,10 @@
 import {
-  Body, Controller, Get, Param, Post, UploadedFiles, UseGuards, UseInterceptors,
+  Body, Controller, Delete, Get, Param,
+  Post, UploadedFiles, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { CurrentUser } from 'src/decorators/user.decorator';
+import { User } from '@supabase/supabase-js';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
 import { Role } from '../users/enums/users.enums';
@@ -16,6 +19,30 @@ export class ProductsController {
   @Get()
   find() {
     return this.productsService.find();
+  }
+
+  @Get('/favorites')
+  @UseGuards(SupabaseGuard)
+  findFavorites(@CurrentUser() user: User) {
+    return this.productsService.findFavorites(user);
+  }
+
+  @Post('/favorites/:productId')
+  @UseGuards(SupabaseGuard)
+  addToFavorites(
+    @Param('productId') productId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.productsService.addToFavorites(user, productId);
+  }
+
+  @Delete('/favorites/:productId')
+  @UseGuards(SupabaseGuard)
+  deleteFromFavorites(
+    @Param('productId') productId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.productsService.removeFromFavorites(user, productId);
   }
 
   @Get('/:id')

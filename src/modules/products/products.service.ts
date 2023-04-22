@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { User } from '@supabase/supabase-js';
 import { CreateProductDto } from './dto/create-product.dto';
 import { DatabaseService } from '../database/database.service';
 
@@ -22,6 +23,39 @@ export class ProductsService {
       .select()
       .eq('id', id)
       .single()
+      .throwOnError();
+
+    return data;
+  }
+
+  async findFavorites({ id }: User) {
+    const { data } = await this.databaseService.database
+      .from('favorites')
+      .select('products (*)')
+      .eq('user_id', id)
+      .throwOnError();
+
+    return data.map((item) => item.products);
+  }
+
+  async addToFavorites({ id }: User, productId: string) {
+    const { data } = await this.databaseService.database
+      .from('favorites')
+      .insert([{
+        user_id: id,
+        products_id: productId,
+      }])
+      .throwOnError();
+
+    return data;
+  }
+
+  async removeFromFavorites({ id }: User, productId: string) {
+    const { data } = await this.databaseService.database
+      .from('favorites')
+      .delete()
+      .eq('user_id', id)
+      .eq('products_id', productId)
       .throwOnError();
 
     return data;
