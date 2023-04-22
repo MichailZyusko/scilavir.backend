@@ -1,5 +1,6 @@
-import { TOrder } from '../types';
-
 export class CreateOrderDto {
-  details: TOrder[];
+  products: [{
+    productId: string,
+    quantity: number
+  }];
 }

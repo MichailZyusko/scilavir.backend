@@ -12,6 +12,6 @@ async function bootstrap() {
   app.setGlobalPrefix('/api');
   app.use(cookieParser());
 
-  await app.listen(3001);
+  await app.listen(3001, () => console.log('[Server started on port 3001]'));
 }
 bootstrap();

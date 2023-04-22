@@ -1,47 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { User } from '@supabase/supabase-js';
 import { MailService } from '../mail/mail.service';
-import { UserDocument } from '../users/schema/user.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { Order, OrderDocument } from './schema/order.shema';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectModel(Order.name) private OrderModel: Model<OrderDocument>,
+    private readonly databaseService: DatabaseService,
     private readonly mailService: MailService,
   ) { }
 
-  async create(createOrderDto: CreateOrderDto, user: UserDocument) {
-    const order = new this.OrderModel({
-      ...createOrderDto,
-      user,
-    });
-    await order.save();
+  async create(user: User, createOrderDto: CreateOrderDto) {
+    const { data: order } = await this.databaseService.database
+      .from('orders')
+      .insert([{
+        user_id: user.id,
+        details: JSON.stringify(createOrderDto.products),
+      }])
+      .throwOnError();
 
-    const populatedOrder = await order.populate({
-      path: 'details',
-      populate: {
-        path: 'product',
-        model: 'Product',
+    const { data: products } = await this.databaseService.database
+      .from('products')
+      .select('*')
+      .in('id', createOrderDto.products.map((product) => product.productId))
+      .throwOnError();
+    const mappedProducts = products.map((product, idx) => ({
+      name: product.name,
+      count: createOrderDto.products[idx].quantity,
+    }));
+
+    await this.mailService.sendNewOrderAlert({
+      order: {
+        user: {
+          firstName: user.user_metadata.firstName,
+          lastName: user.user_metadata.lastName,
+        },
+        details: mappedProducts,
       },
     });
-
-    await this.mailService.sendNewOrderAlert({ order: populatedOrder });
 
     return order;
-  }
-
-  async findAll() {
-    const orders = await this.OrderModel.find().populate({
-      path: 'details',
-      populate: {
-        path: 'product',
-        model: 'Product',
-      },
-    });
-
-    return orders;
   }
 }
