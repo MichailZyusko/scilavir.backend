@@ -2,8 +2,8 @@ import {
   Body,
   Controller, Post, UseGuards,
 } from '@nestjs/common';
-import { CurrentUser } from 'src/decorators/user.decorator';
 import { User } from '@supabase/supabase-js';
+import { CurrentUser } from '../../decorators/user.decorator';
 import { OrdersService } from './orders.service';
 import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';

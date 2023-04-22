@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { SCILAVIR_EMAIL } from 'src/constants';
+import { SCILAVIR_EMAIL } from '../../constants';
 
 @Injectable()
 export class MailService {

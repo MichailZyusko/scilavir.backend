@@ -3,8 +3,8 @@ import {
   Post, UploadedFiles, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { CurrentUser } from 'src/decorators/user.decorator';
 import { User } from '@supabase/supabase-js';
+import { CurrentUser } from '../../decorators/user.decorator';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
 import { Role } from '../users/enums/users.enums';
