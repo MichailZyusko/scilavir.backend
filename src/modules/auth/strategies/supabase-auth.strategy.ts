@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
-import { SupabaseAuthStrategy } from 'nestjs-supabase-auth';
+import { SupabaseAuthStrategy } from '../../../lib/nest-supabase-auth';
 
 @Injectable()
 export class SupabaseStrategy extends PassportStrategy(
@@ -30,7 +30,7 @@ export class SupabaseStrategy extends PassportStrategy(
     // super.validate(payload);
   }
 
-  authenticate(req: any) {
+  async authenticate(req: any) {
     super.authenticate(req);
   }
 }
