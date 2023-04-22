@@ -9,7 +9,7 @@ import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
 import { Role } from '../users/enums/users.enums';
 import { CreateProductDto } from './dto/create-product.dto';
-import { ProductsService } from './Products.service';
+import { ProductsService } from './products.service';
 import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('products')

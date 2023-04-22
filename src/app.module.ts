@@ -10,7 +10,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { UsersModule } from './modules/users/users.module';
 import { winstonConf } from './constants/winston.config';
-import { DatabaseModule } from './modules/database/databse.module';
+import { DatabaseModule } from './modules/database/database.module';
 
 @Module({
   imports: [
