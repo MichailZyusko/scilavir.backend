@@ -45,6 +45,16 @@ export class ProductsController {
     return this.productsService.removeFromFavorites(user, productId);
   }
 
+  @Get('/categories/:categoryId')
+  findProductsByCategory(@Param('categoryId') categoryId: string) {
+    return this.productsService.findByCategory(categoryId);
+  }
+
+  @Get('/groups/:groupId')
+  findProductsByGroup(@Param('groupId') groupId: string) {
+    return this.productsService.findByGroup(groupId);
+  }
+
   @Get('/:id')
   findById(@Param('id') id: string) {
     return this.productsService.findById(id);

@@ -61,6 +61,26 @@ export class ProductsService {
     return data;
   }
 
+  async findByCategory(categoryId: string) {
+    const { data: products } = await this.databaseService.database
+      .from('products')
+      .select()
+      .contains('category_ids', [categoryId])
+      .throwOnError();
+
+    return products;
+  }
+
+  async findByGroup(groupId: string) {
+    const { data: products } = await this.databaseService.database
+      .from('products')
+      .select()
+      .contains('group_ids', [groupId])
+      .throwOnError();
+
+    return products;
+  }
+
   async save(createProductDto: CreateProductDto, images: Express.Multer.File[]) {
     const productId = randomUUID();
 
