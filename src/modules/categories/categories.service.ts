@@ -6,18 +6,22 @@ export class CategoriesService {
   constructor(private readonly databaseService: DatabaseService) { }
 
   async findAll() {
-    return this.databaseService.database
+    const { data: categories } = await this.databaseService.database
       .from('categories')
-      .select()
+      .select('id, name, parent_id')
       .throwOnError();
+
+    return categories;
   }
 
-  findOne(id: number) {
-    return this.databaseService.database
+  async findOne(id: string) {
+    const { data: category } = await this.databaseService.database
       .from('categories')
-      .select()
+      .select('id, name, parent_id')
       .eq('id', id)
       .single()
       .throwOnError();
+
+    return category;
   }
 }
