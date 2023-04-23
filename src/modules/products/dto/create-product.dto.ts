@@ -4,4 +4,8 @@ export class CreateProductDto {
   description: string;
 
   price: number;
+
+  category_ids: string;
+
+  group_ids: string;
 }

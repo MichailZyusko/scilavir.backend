@@ -82,6 +82,8 @@ export class ProductsService {
       .insert({
         ...createProductDto,
         id: productId,
+        group_ids: createProductDto.group_ids.split(','),
+        category_ids: createProductDto.category_ids.split(','),
         images: images.map((img) => `https://hljgruyjewkbrmyedjik.supabase.co/storage/v1/object/public/backets/images/${productId}/${img.originalname}`),
       });
 

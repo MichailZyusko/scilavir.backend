@@ -12,6 +12,6 @@ export class GroupsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.groupsService.findOne(+id);
+    return this.groupsService.findOne(id);
   }
 }
