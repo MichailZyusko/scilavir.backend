@@ -19,6 +19,7 @@ export class GroupsService {
       .from('groups')
       .select()
       .eq('id', id)
+      .single()
       .throwOnError();
 
     return group;

@@ -11,7 +11,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(id);
+  findSubCategories(@Param('id') id: string) {
+    return this.categoriesService.findSubCategories(id);
   }
 }
