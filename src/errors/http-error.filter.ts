@@ -44,7 +44,7 @@ export class HttpErrorFilter implements ExceptionFilter {
     const errorResponse = generateError(exception);
 
     this.logger.warn(`${request.method} ${request.url}`);
-    this.logger.error(exception);
+    console.log(exception);
 
     response.status(errorResponse.httpCode).json(errorResponse);
   }

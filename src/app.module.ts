@@ -13,6 +13,7 @@ import { winstonConf } from './constants/winston.config';
 import { DatabaseModule } from './modules/database/database.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { GroupsModule } from './modules/groups/groups.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { GroupsModule } from './modules/groups/groups.module';
     CategoriesModule,
     GroupsModule,
     DatabaseModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [
