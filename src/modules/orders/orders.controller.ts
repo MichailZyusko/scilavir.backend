@@ -1,12 +1,8 @@
-import {
-  Body,
-  Controller, Post, UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, UseGuards } from '@nestjs/common';
 import { User } from '@supabase/supabase-js';
 import { CurrentUser } from '../../decorators/user.decorator';
 import { OrdersService } from './orders.service';
 import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
-import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -14,10 +10,7 @@ export class OrdersController {
 
   @Post()
   @UseGuards(SupabaseGuard)
-  create(
-    @CurrentUser() user: User,
-    @Body() createOrderDto: CreateOrderDto,
-  ) {
-    return this.ordersService.create(user, createOrderDto);
+  create(@CurrentUser() user: User) {
+    return this.ordersService.create(user);
   }
 }
