@@ -38,13 +38,24 @@ export class ProductsService {
     return data.map((item) => item.products);
   }
 
+  async findFavoritesById({ id }: User, productId: string) {
+    const { data: product } = await this.databaseService.database
+      .from('favorites')
+      .select('product_id')
+      .eq('user_id', id)
+      .eq('product_id', productId)
+      .single();
+
+    return { isFavorite: !!product };
+  }
+
   async addToFavorites({ id }: User, productId: string) {
     const { data } = await this.databaseService.database
       .from('favorites')
-      .insert([{
+      .insert({
         user_id: id,
-        products_id: productId,
-      }])
+        product_id: productId,
+      })
       .throwOnError();
 
     return data;
@@ -55,7 +66,7 @@ export class ProductsService {
       .from('favorites')
       .delete()
       .eq('user_id', id)
-      .eq('products_id', productId)
+      .eq('product_id', productId)
       .throwOnError();
 
     return data;

@@ -27,6 +27,15 @@ export class ProductsController {
     return this.productsService.findFavorites(user);
   }
 
+  @Get('/favorites/:productId')
+  @UseGuards(SupabaseGuard)
+  findFavoritesById(
+    @Param('productId') productId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.productsService.findFavoritesById(user, productId);
+  }
+
   @Post('/favorites/:productId')
   @UseGuards(SupabaseGuard)
   addToFavorites(
