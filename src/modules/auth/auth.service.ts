@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { User } from '@supabase/supabase-js';
 import { SignInDto } from './dto/sign-in.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { DatabaseService } from '../database/database.service';
@@ -50,5 +51,13 @@ export class AuthService {
       accessToken: session.access_token,
       refreshToken: session.refresh_token,
     };
+  }
+
+  async resetPassword({ email }: User) {
+    return this.databaseService.resetPassword(email);
+  }
+
+  async updatePassword(password: string) {
+    return this.databaseService.updatePassword(password);
   }
 }
