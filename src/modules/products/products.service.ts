@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { User } from '@supabase/supabase-js';
+import { SortStrategy } from 'src/enums';
+import { getSortStrategy } from 'src/utils';
 import { CreateProductDto } from './dto/create-product.dto';
 import { DatabaseService } from '../database/database.service';
 
@@ -72,21 +74,25 @@ export class ProductsService {
     return data;
   }
 
-  async findByCategory(categoryId: string) {
+  async findByCategory(categoryId: string, sort: SortStrategy) {
+    const [column, direction] = getSortStrategy(sort);
     const { data: products } = await this.databaseService.database
       .from('products')
       .select()
       .contains('category_ids', [categoryId])
+      .order(column, direction)
       .throwOnError();
 
     return products;
   }
 
-  async findByGroup(groupId: string) {
+  async findByGroup(groupId: string, sort: SortStrategy) {
+    const [column, direction] = getSortStrategy(sort);
     const { data: products } = await this.databaseService.database
       .from('products')
       .select()
       .contains('group_ids', [groupId])
+      .order(column, direction)
       .throwOnError();
 
     return products;
