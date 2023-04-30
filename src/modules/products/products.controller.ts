@@ -1,9 +1,10 @@
 import {
   Body, Controller, Delete, Get, Param,
-  Post, UploadedFiles, UseGuards, UseInterceptors,
+  Post, Query, UploadedFiles, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { User } from '@supabase/supabase-js';
+import { SortStrategy } from 'src/enums';
 import { CurrentUser } from '../../decorators/user.decorator';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
@@ -55,13 +56,19 @@ export class ProductsController {
   }
 
   @Get('/categories/:categoryId')
-  findProductsByCategory(@Param('categoryId') categoryId: string) {
-    return this.productsService.findByCategory(categoryId);
+  findProductsByCategory(
+    @Param('categoryId') categoryId: string,
+    @Query('sort') sort: SortStrategy,
+  ) {
+    return this.productsService.findByCategory(categoryId, sort);
   }
 
   @Get('/groups/:groupId')
-  findProductsByGroup(@Param('groupId') groupId: string) {
-    return this.productsService.findByGroup(groupId);
+  findProductsByGroup(
+    @Param('groupId') groupId: string,
+    @Query('sort') sort: SortStrategy,
+  ) {
+    return this.productsService.findByGroup(groupId, sort);
   }
 
   @Get('/:id')
