@@ -12,7 +12,24 @@ export class CategoriesService {
       .is('parent_id', null)
       .throwOnError();
 
-    return categories;
+    const { data: products } = await this.databaseService.database
+      .from('products')
+      .select('category_ids, price')
+      .throwOnError();
+
+    const mappedCategories = categories.map(({ id, ...category }) => ({
+      ...category,
+      id,
+      minPrice: products.reduce((acc, product) => {
+        if (product.category_ids.includes(id)) {
+          return acc < product.price ? acc : product.price;
+        }
+
+        return acc;
+      }, Infinity),
+    }));
+
+    return mappedCategories;
   }
 
   async findSubCategories(id: string) {

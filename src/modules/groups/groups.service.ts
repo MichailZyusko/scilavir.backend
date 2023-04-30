@@ -11,7 +11,24 @@ export class GroupsService {
       .select('id, name')
       .throwOnError();
 
-    return groups;
+    const { data: products } = await this.databaseService.database
+      .from('products')
+      .select('group_ids, price')
+      .throwOnError();
+
+    const mappedGroups = groups.map(({ id, ...group }) => ({
+      ...group,
+      id,
+      minPrice: products.reduce((acc, product) => {
+        if (product.group_ids.includes(id)) {
+          return acc < product.price ? acc : product.price;
+        }
+
+        return acc;
+      }, Infinity),
+    }));
+
+    return mappedGroups;
   }
 
   async findOne(id: string) {
