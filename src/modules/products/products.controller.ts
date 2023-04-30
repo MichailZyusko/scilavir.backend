@@ -24,8 +24,11 @@ export class ProductsController {
 
   @Get('/favorites')
   @UseGuards(SupabaseGuard)
-  findFavorites(@CurrentUser() user: User) {
-    return this.productsService.findFavorites(user);
+  findFavorites(
+    @Query('sort') sort: SortStrategy,
+    @CurrentUser() user: User,
+  ) {
+    return this.productsService.findFavorites(user, sort);
   }
 
   @Get('/favorites/:productId')

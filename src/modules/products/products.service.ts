@@ -30,14 +30,20 @@ export class ProductsService {
     return data;
   }
 
-  async findFavorites({ id }: User) {
+  async findFavorites({ id }: User, sort: SortStrategy) {
+    const [column, direction] = getSortStrategy(sort);
     const { data } = await this.databaseService.database
       .from('favorites')
       .select('products (*)')
       .eq('user_id', id)
       .throwOnError();
 
-    return data.map((item) => item.products);
+    return data
+      .map((item) => item.products)
+      // eslint-disable-next-line no-nested-ternary
+      .sort((a, b) => (direction.ascending
+        ? (a[column] < b[column] ? -1 : 1)
+        : (a[column] > b[column] ? -1 : 1)));
   }
 
   async findFavoritesById({ id }: User, productId: string) {
