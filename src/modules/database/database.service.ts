@@ -12,6 +12,9 @@ export class DatabaseService {
       process.env.SUPABASE_URL,
       process.env.SUPABASE_API_KEY,
     );
+    this.database.auth.onAuthStateChange((event, session) => {
+      console.log('🚀 ~ file: database.service.ts:17 ~ event, session:', event, session);
+    });
   }
 
   async signUp(credentials: SignUpWithPasswordCredentials) {
@@ -40,6 +43,22 @@ export class DatabaseService {
       refresh_token: refreshToken,
     });
 
+    if (error) throw error;
+
+    return data;
+  }
+
+  async resetPassword(email: string) {
+    const { data, error } = await this.database.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.WEB_APP_LINK}/auth/update-password`,
+    });
+    if (error) throw error;
+
+    return data;
+  }
+
+  async updatePassword(password: string) {
+    const { data, error } = await this.database.auth.updateUser({ password });
     if (error) throw error;
 
     return data;
