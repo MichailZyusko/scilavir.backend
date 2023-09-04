@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { User } from '@supabase/supabase-js';
 import { SortStrategy } from 'src/enums';
 import { getSortStrategy } from 'src/utils';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -30,12 +29,12 @@ export class ProductsService {
     return data;
   }
 
-  async findFavorites({ id }: User, sort: SortStrategy) {
+  async findFavorites(userId: string, sort: SortStrategy) {
     const [column, direction] = getSortStrategy(sort);
     const { data } = await this.databaseService.database
       .from('favorites')
       .select('products (*)')
-      .eq('user_id', id)
+      .eq('user_id', userId)
       .throwOnError();
 
     return data
@@ -46,22 +45,22 @@ export class ProductsService {
         : (a[column] > b[column] ? -1 : 1)));
   }
 
-  async findFavoritesById({ id }: User, productId: string) {
+  async findFavoritesById(userId: string, productId: string) {
     const { data: product } = await this.databaseService.database
       .from('favorites')
       .select('product_id')
-      .eq('user_id', id)
+      .eq('user_id', userId)
       .eq('product_id', productId)
       .single();
 
     return { isFavorite: !!product };
   }
 
-  async addToFavorites({ id }: User, productId: string) {
+  async addToFavorites(userId: string, productId: string) {
     const { data } = await this.databaseService.database
       .from('favorites')
       .insert({
-        user_id: id,
+        user_id: userId,
         product_id: productId,
       })
       .throwOnError();
@@ -69,11 +68,11 @@ export class ProductsService {
     return data;
   }
 
-  async removeFromFavorites({ id }: User, productId: string) {
+  async removeFromFavorites(userId: string, productId: string) {
     const { data } = await this.databaseService.database
       .from('favorites')
       .delete()
-      .eq('user_id', id)
+      .eq('user_id', userId)
       .eq('product_id', productId)
       .throwOnError();
 

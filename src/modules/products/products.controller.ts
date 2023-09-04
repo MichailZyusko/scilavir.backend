@@ -3,9 +3,8 @@ import {
   Post, Query, UploadedFiles, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { User } from '@supabase/supabase-js';
 import { SortStrategy } from 'src/enums';
-import { CurrentUser } from '../../decorators/user.decorator';
+import { User } from '../../decorators/user.decorator';
 import { RolesGuard } from '../../guards/role.guard';
 import { Roles } from '../../decorators/role.decorator';
 import { Role } from '../users/enums/users.enums';
@@ -23,39 +22,35 @@ export class ProductsController {
   }
 
   @Get('/favorites')
-  @UseGuards(SupabaseGuard)
   findFavorites(
     @Query('sort') sort: SortStrategy,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.findFavorites(user, sort);
+    return this.productsService.findFavorites(userId, sort);
   }
 
   @Get('/favorites/:productId')
-  @UseGuards(SupabaseGuard)
   findFavoritesById(
     @Param('productId') productId: string,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.findFavoritesById(user, productId);
+    return this.productsService.findFavoritesById(userId, productId);
   }
 
   @Post('/favorites/:productId')
-  @UseGuards(SupabaseGuard)
   addToFavorites(
     @Param('productId') productId: string,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.addToFavorites(user, productId);
+    return this.productsService.addToFavorites(userId, productId);
   }
 
   @Delete('/favorites/:productId')
-  @UseGuards(SupabaseGuard)
   deleteFromFavorites(
     @Param('productId') productId: string,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.removeFromFavorites(user, productId);
+    return this.productsService.removeFromFavorites(userId, productId);
   }
 
   @Get('/categories/:categoryId')
