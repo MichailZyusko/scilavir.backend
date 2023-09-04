@@ -1,12 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { CurrentUser } from '../../decorators/user.decorator';
-import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
+import { Controller, Get } from '@nestjs/common';
+import { getUserById } from 'src/utils';
+import { User } from '../../decorators/user.decorator';
 
 @Controller('users')
 export class UsersController {
   @Get('self')
-  @UseGuards(SupabaseGuard)
-  getMyUser(@CurrentUser() user: any) {
-    return user;
+  async getMyUser(@User() userId: string) {
+    return getUserById(userId);
   }
 }

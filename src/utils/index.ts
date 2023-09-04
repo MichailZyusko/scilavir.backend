@@ -1,3 +1,4 @@
+import { users } from '@clerk/clerk-sdk-node';
 import { SortStrategy } from 'src/enums';
 
 export const round = (x: number) => Math.round(x * 100) / 100;
@@ -15,3 +16,5 @@ export const getSortStrategy = (sort: SortStrategy): readonly [string, { ascendi
     default: throw new Error('Invalid sort strategy');
   }
 };
+
+export const getUserById = async (id: string) => users.getUser(id);

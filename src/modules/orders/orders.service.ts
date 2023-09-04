@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@supabase/supabase-js';
+import { getUserById } from 'src/utils';
 import { MailService } from '../mail/mail.service';
 import { DatabaseService } from '../database/database.service';
 
@@ -10,7 +10,9 @@ export class OrdersService {
     private readonly mailService: MailService,
   ) { }
 
-  async create(user: User) {
+  async create(userId: string) {
+    const user = await getUserById(userId);
+
     const { data: cart } = await this.databaseService.database
       .from('cart')
       .select('quantity, products(id, name, price, images)')
@@ -28,8 +30,8 @@ export class OrdersService {
     await this.mailService.sendNewOrderAlert({
       order: {
         user: {
-          firstName: user.user_metadata.firstName,
-          lastName: user.user_metadata.lastName,
+          firstName: user.firstName,
+          lastName: user.lastName,
         },
         details: cart as any,
       },

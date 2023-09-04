@@ -1,13 +1,13 @@
+import { RequireAuthProp } from '@clerk/clerk-sdk-node';
 import { BadRequestException, createParamDecorator, type ExecutionContext } from '@nestjs/common';
-import { User } from '@supabase/supabase-js';
 
-export const CurrentUser = createParamDecorator(
-  (data: unknown, context: ExecutionContext): User => {
-    const req: Request & { user: any } = context.switchToHttp().getRequest();
-    const user = req?.user;
+export const User = createParamDecorator(
+  (data: unknown, context: ExecutionContext) => {
+    const req: RequireAuthProp<Request> = context.switchToHttp().getRequest();
+    const { userId } = req?.auth || {};
 
-    if (!user) throw new BadRequestException('User not found');
+    if (!userId) throw new BadRequestException('User not found');
 
-    return user;
+    return userId;
   },
 );
