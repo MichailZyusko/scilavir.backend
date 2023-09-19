@@ -3,12 +3,13 @@ import { randomUUID } from 'crypto';
 import { SortStrategy } from 'src/enums';
 import { getSortStrategy } from 'src/utils';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Repository } from 'typeorm';
+import { ArrayContains, FindOptionsOrder, Repository } from 'typeorm';
 import { imagesUrl } from 'src/constants';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
 import { Favorite } from './entity/favorite.entity';
+import { TProductsService } from './types';
 
 @Injectable()
 export class ProductsService {
@@ -20,14 +21,23 @@ export class ProductsService {
     private favoriteRepository: Repository<Favorite>,
   ) { }
 
-  async find() {
-    return this.productsRepository.find();
-    // const { data } = await this.databaseService.database
-    //   .from('products')
-    //   .select()
-    //   .throwOnError();
+  // ! TODO: add isFavorite field for joining another table
+  async find({ categoryIds, groupIds, sort }: TProductsService.FindProducts) {
+    const order: FindOptionsOrder<Product> = {};
 
-    // return data;
+    if (sort) {
+      const [column, direction] = getSortStrategy(sort);
+
+      order[column] = direction;
+    }
+
+    return this.productsRepository.find({
+      where: {
+        ...(categoryIds && { categoryIds: ArrayContains(categoryIds) }),
+        ...(groupIds && { groupIds: ArrayContains(groupIds) }),
+      },
+      order,
+    });
   }
 
   async findById(userId: string, id: string) {
@@ -62,20 +72,18 @@ export class ProductsService {
   }
 
   async findFavorites(userId: string, sort: SortStrategy) {
-    const [column, { ascending }] = getSortStrategy(sort);
+    const [column, direction] = getSortStrategy(sort);
 
-    const products = await this.productsRepository.createQueryBuilder()
-      .select('*')
+    return this.productsRepository.createQueryBuilder()
+      .select('p')
       .from(Product, 'p')
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
       .where('f.userId = :userId', { userId })
-      .orderBy(`p.${column}`, ascending ? 'ASC' : 'DESC')
+      .orderBy(`p.${column}`, direction)
       .getMany();
-    console.log('🚀 ~ file: products.service.ts:93 ~ products:', products);
-
-    return products;
   }
 
+  // ! TODO addToSelect to find by product id
   async findFavoritesById(userId: string, productId: string) {
     const isFavorite = await this.favoriteRepository.exist({
       where: {
@@ -99,34 +107,6 @@ export class ProductsService {
       userId,
       productId,
     });
-  }
-
-  async findByCategory(categoryId: string, sort: SortStrategy) {
-    const [column, direction] = getSortStrategy(sort);
-
-    return this.productsRepository
-      .find({
-        where: {
-          categoryIds: ArrayContains([categoryId]),
-        },
-        order: {
-          [column]: direction,
-        },
-      });
-  }
-
-  async findByGroup(groupId: string, sort: SortStrategy) {
-    const [column, direction] = getSortStrategy(sort);
-
-    return this.productsRepository
-      .find({
-        where: {
-          groupIds: ArrayContains([groupId]),
-        },
-        order: {
-          [column]: direction,
-        },
-      });
   }
 
   async save(createProductDto: CreateProductDto, images: Express.Multer.File[]) {

@@ -18,7 +18,7 @@ export class GroupsService {
   }
 
   async findOne(id: string) {
-    return this.groupsRepository.findOneOrFail({
+    return this.groupsRepository.findOne({
       where: { id },
     });
   }

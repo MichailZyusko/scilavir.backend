@@ -20,7 +20,7 @@ export class CategoriesService {
   }
 
   async findSubCategories(id: string) {
-    return this.categoriesRepository.findOneOrFail({
+    return this.categoriesRepository.find({
       where: { parentId: id },
       select: ['id', 'name', 'parentId'],
     });
