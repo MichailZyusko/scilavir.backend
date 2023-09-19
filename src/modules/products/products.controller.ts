@@ -7,14 +7,15 @@ import { SortStrategy } from 'src/enums';
 import { User } from '../../decorators/user.decorator';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';
+import { GetProductsDto } from './dto/get-products.dto';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
   @Get()
-  find() {
-    return this.productsService.find();
+  find(@Query() params: GetProductsDto) {
+    return this.productsService.find(params);
   }
 
   @Get('/favorites')
@@ -25,6 +26,7 @@ export class ProductsController {
     return this.productsService.findFavorites(userId, sort);
   }
 
+  // ? Useless since we will addToSelect
   @Get('/favorites/:productId')
   findFavoritesById(
     @Param('productId') productId: string,
@@ -47,22 +49,6 @@ export class ProductsController {
     @User() userId: string,
   ) {
     return this.productsService.removeFromFavorites(userId, productId);
-  }
-
-  @Get('/categories/:categoryId')
-  findProductsByCategory(
-    @Param('categoryId') categoryId: string,
-    @Query('sort') sort: SortStrategy,
-  ) {
-    return this.productsService.findByCategory(categoryId, sort);
-  }
-
-  @Get('/groups/:groupId')
-  findProductsByGroup(
-    @Param('groupId') groupId: string,
-    @Query('sort') sort: SortStrategy,
-  ) {
-    return this.productsService.findByGroup(groupId, sort);
   }
 
   @Get('/:id')
