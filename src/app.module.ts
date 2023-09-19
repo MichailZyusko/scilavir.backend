@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { HttpErrorFilter } from './errors/http-error.filter';
 import { ProductsModule } from './modules/products/products.module';
@@ -16,12 +17,31 @@ import { DatabaseModule } from './modules/database/database.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { CartModule } from './modules/cart/cart.module';
+import { Product } from './modules/products/entity/product.entity';
+import { Group } from './modules/groups/entity/group.entity';
+import { Category } from './modules/categories/entity/category.entity';
+import { Favorite } from './modules/products/entity/favorite.entity';
+import { Cart } from './modules/cart/entity/cart.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env.prod'],
+    }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      // entities: ['dist/**/*.entity{.ts,.js}'],
+      // autoLoadEntities: true,
+      // TODO: auto load entities
+      logging: ['query'],
+      entities: [Product, Group, Category, Favorite, Cart],
+      synchronize: true,
     }),
     WinstonModule.forRoot(winstonConf),
     MailModule,

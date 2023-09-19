@@ -1,16 +1,12 @@
 import {
   Body, Controller, Delete, Get, Param,
-  Post, Query, UploadedFiles, UseGuards, UseInterceptors,
+  Post, Query, UploadedFiles, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { SortStrategy } from 'src/enums';
 import { User } from '../../decorators/user.decorator';
-import { RolesGuard } from '../../guards/role.guard';
-import { Roles } from '../../decorators/role.decorator';
-import { Role } from '../users/enums/users.enums';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';
-import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -70,13 +66,17 @@ export class ProductsController {
   }
 
   @Get('/:id')
-  findById(@Param('id') id: string) {
-    return this.productsService.findById(id);
+  findById(
+    @Param('id') id: string,
+    @User() userId: string,
+  ) {
+    return this.productsService.findById(userId, id);
   }
 
+  // ! TODO: Add roles guard
   @Post()
-  @UseGuards(SupabaseGuard, RolesGuard)
-  @Roles(Role.admin)
+  // @UseGuards(RolesGuard)
+  // @Roles(Role.admin)
   @UseInterceptors(FilesInterceptor('images', 5))
   create(
     @Body() createProductDto: CreateProductDto,

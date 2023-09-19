@@ -1,5 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { RequireAuthProp } from '@clerk/clerk-sdk-node';
+import { getUserById } from 'src/utils';
 import { Role } from '../modules/users/enums/users.enums';
 import { ROLES_KEY } from '../decorators/role.decorator';
 
@@ -7,17 +9,20 @@ import { ROLES_KEY } from '../decorators/role.decorator';
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) { }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
+
     if (!requiredRoles) {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const { auth: { userId } }: RequireAuthProp<Request> = context.switchToHttp().getRequest();
+    const user = await getUserById(userId);
 
-    return requiredRoles.some((role) => user.user_metadata?.role?.includes(role));
+    // return requiredRoles.some((role) => user.publicMetadata?.role?.includes(role));
+    return !!user.publicMetadata.isAdmin;
   }
 }
