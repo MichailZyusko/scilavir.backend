@@ -39,7 +39,7 @@ export class GroupsService {
   }
 
   async findOne(id: string) {
-    return this.productsRepository.findOne({
+    return this.groupsRepository.findOne({
       where: { id },
     });
   }
