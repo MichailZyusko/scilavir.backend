@@ -12,10 +12,10 @@ export class OrderItem {
   @PrimaryColumn('uuid')
   orderId: string;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, unsigned: true })
   quantity: number;
 
-  @Column({ default: 0 })
+  @Column('float', { default: 0 })
   price: number;
 
   @CreateDateColumn()
