@@ -22,6 +22,8 @@ import { Group } from './modules/groups/entity/group.entity';
 import { Category } from './modules/categories/entity/category.entity';
 import { Favorite } from './modules/products/entity/favorite.entity';
 import { Cart } from './modules/cart/entity/cart.entity';
+import { Order } from './modules/orders/entity/order.entity';
+import { OrderItem } from './modules/orders/entity/order-item.entity';
 
 @Module({
   imports: [
@@ -36,11 +38,12 @@ import { Cart } from './modules/cart/entity/cart.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      schema: process.env.DB_SCHEMA,
       // entities: ['dist/**/*.entity{.ts,.js}'],
       // autoLoadEntities: true,
       // TODO: auto load entities
       logging: ['query'],
-      entities: [Product, Group, Category, Favorite, Cart],
+      entities: [Product, Group, Category, Favorite, Cart, Order, OrderItem],
       synchronize: true,
     }),
     WinstonModule.forRoot(winstonConf),

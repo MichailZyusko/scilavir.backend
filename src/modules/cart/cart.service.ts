@@ -11,11 +11,11 @@ export class CartService {
     private cartRepository: Repository<Cart>,
   ) { }
 
-  async addNewItem(userId: string, payload: AddNewItemDto) {
+  async addNewItem(userId: string, { productId, quantity }: AddNewItemDto) {
     return this.cartRepository.upsert({
       userId,
-      productId: payload.productId,
-      quantity: payload.quantity,
+      productId,
+      quantity,
     }, ['userId', 'productId']);
   }
 
@@ -37,17 +37,12 @@ export class CartService {
   }
 
   async getCart(userId: string) {
-    const products = await this.cartRepository.find({
+    return this.cartRepository.find({
       where: {
         userId,
       },
-      relations: ['productId'],
+      relations: ['product'],
       select: ['quantity'],
     });
-
-    return products.map(({ productId, ...rest }) => ({
-      products: productId,
-      ...rest,
-    }));
   }
 }

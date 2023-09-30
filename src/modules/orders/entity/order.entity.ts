@@ -1,12 +1,12 @@
 import {
-  Entity, CreateDateColumn, UpdateDateColumn, PrimaryColumn, Column,
+  Entity, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Column,
 } from 'typeorm';
 
 @Entity({
   name: 'orders',
 })
 export class Order {
-  @PrimaryColumn('uuid')
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
