@@ -3,7 +3,7 @@ import {
   Post, Query, UploadedFiles, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { SortStrategy } from 'src/enums';
+import { SortStrategy } from '../../enums';
 import { User } from '../../decorators/user.decorator';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';

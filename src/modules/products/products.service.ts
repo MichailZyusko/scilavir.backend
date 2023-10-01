@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { SortStrategy } from 'src/enums';
 import { getSortStrategy } from 'src/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArrayContains, FindOptionsOrder, Repository } from 'typeorm';
 import { imagesUrl } from 'src/constants';
+import { SortStrategy } from '../../enums';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
