@@ -1,7 +1,7 @@
 import {
   Body, Controller, Delete, Get, Param, Post,
 } from '@nestjs/common';
-import { User } from 'src/decorators/user.decorator';
+import { User } from '@decorators/user.decorator';
 import { CartService } from './cart.service';
 import { AddNewItemDto } from './dto/add-new-item.dto';
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { getUserById } from 'src/utils';
+import { getUserById } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MailService } from '../mail/mail.service';
-import { Cart } from '../cart/entity/cart.entity';
+import { MailService } from '@mail/mail.service';
+import { Cart } from '@cart/entity/cart.entity';
 import { Order } from './entity/order.entity';
 import { OrderItem } from './entity/order-item.entity';
 

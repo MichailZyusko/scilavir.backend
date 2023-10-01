@@ -10,6 +10,50 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@src/*": [
+        ".src/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@products/*": [
+        "./src/modules/products/*"
+      ],
+      "@cart/*": [
+        "./src/modules/cart/*"
+      ],
+      "@categories/*": [
+        "./src/modules/categories/*"
+      ],
+      "@groups/*": [
+        "./src/modules/groups/*"
+      ],
+      "@mail/*": [
+        "./src/modules/mail/*"
+      ],
+      "@orders/*": [
+        "./src/modules/orders/*"
+      ],
+      "@users/*": [
+        "./src/modules/users/*"
+      ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
+      "@enums/*": [
+        "./src/enums/*"
+      ],
+      "@decorators/*": [
+        "./src/decorators/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@errors/*": [
+        "./src/errors/*"
+      ],
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
