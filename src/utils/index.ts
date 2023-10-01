@@ -1,5 +1,5 @@
 import { users } from '@clerk/clerk-sdk-node';
-import { SortStrategy } from 'src/enums';
+import { SortStrategy } from '@enums/index';
 
 export const round = (x: number) => Math.round(x * 100) / 100;
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { round } from 'src/utils';
+import { round } from '@utils/index';
 import { User } from '@clerk/backend';
-import { SCILAVIR_EMAIL } from '../../constants';
-import { Cart } from '../cart/entity/cart.entity';
+import { Cart } from '@cart/entity/cart.entity';
+import { SCILAVIR_EMAIL } from '@constants/index';
 
 type TOrder = {
   user: User;

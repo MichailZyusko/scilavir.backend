@@ -1,7 +1,7 @@
-import { Product } from 'src/modules/products/entity/product.entity';
 import {
   Entity, CreateDateColumn, UpdateDateColumn, PrimaryColumn, OneToOne, Column, JoinColumn,
 } from 'typeorm';
+import { Product } from '@products/entity/product.entity';
 
 @Entity({ name: 'cart' })
 export class Cart {

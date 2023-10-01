@@ -6,24 +6,17 @@ import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProductsModule } from '@products/products.module';
+import { MailModule } from '@mail/mail.module';
+import { OrdersModule } from '@orders/orders.module';
+import { UsersModule } from '@users/users.module';
+import { CategoriesModule } from '@categories/categories.module';
+import { GroupsModule } from '@groups/groups.module';
+import { CartModule } from '@cart/cart.module';
+import { winstonConf } from '@constants/winston.config';
+import { HttpErrorFilter } from '@errors/http-error.filter';
 import { AppController } from './app.controller';
-import { HttpErrorFilter } from './errors/http-error.filter';
-import { ProductsModule } from './modules/products/products.module';
-import { MailModule } from './modules/mail/mail.module';
-import { OrdersModule } from './modules/orders/orders.module';
-import { UsersModule } from './modules/users/users.module';
-import { winstonConf } from './constants/winston.config';
 import { DatabaseModule } from './modules/database/database.module';
-import { CategoriesModule } from './modules/categories/categories.module';
-import { GroupsModule } from './modules/groups/groups.module';
-import { CartModule } from './modules/cart/cart.module';
-import { Product } from './modules/products/entity/product.entity';
-import { Group } from './modules/groups/entity/group.entity';
-import { Category } from './modules/categories/entity/category.entity';
-import { Favorite } from './modules/products/entity/favorite.entity';
-import { Cart } from './modules/cart/entity/cart.entity';
-import { Order } from './modules/orders/entity/order.entity';
-import { OrderItem } from './modules/orders/entity/order-item.entity';
 
 @Module({
   imports: [
@@ -39,11 +32,8 @@ import { OrderItem } from './modules/orders/entity/order-item.entity';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       schema: process.env.DB_SCHEMA,
-      // entities: ['dist/**/*.entity{.ts,.js}'],
-      // autoLoadEntities: true,
-      // TODO: auto load entities
+      autoLoadEntities: true,
       logging: ['query'],
-      entities: [Product, Group, Category, Favorite, Cart, Order, OrderItem],
       synchronize: true,
     }),
     WinstonModule.forRoot(winstonConf),
@@ -74,7 +64,6 @@ export class AppModule implements NestModule {
         { path: '/categories', method: RequestMethod.GET },
         { path: '/groups/(.*)', method: RequestMethod.GET },
         { path: '/categories/(.*)', method: RequestMethod.GET },
-        // { path: '/products/(.*)', method: RequestMethod.GET },
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
