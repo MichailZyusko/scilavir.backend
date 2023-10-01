@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { SupabaseStrategy } from './strategies/supabase-auth.strategy';
 import { DatabaseModule } from '../database/database.module';
 
 /*
@@ -9,10 +8,7 @@ import { DatabaseModule } from '../database/database.module';
 */
 @Module({
   imports: [DatabaseModule],
-  providers: [
-    AuthService,
-    SupabaseStrategy,
-  ],
+  providers: [AuthService],
   controllers: [AuthController],
 })
 export class AuthModule { }

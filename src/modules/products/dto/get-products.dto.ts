@@ -1,4 +1,4 @@
-import { SortStrategy } from '../../../enums';
+import { SortStrategy } from '@enums/index';
 
 export class GetProductsDto {
   categoryIds?: string[];
