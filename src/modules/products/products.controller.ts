@@ -1,87 +1,68 @@
 import {
   Body, Controller, Delete, Get, Param,
-  Post, Query, UploadedFiles, UseGuards, UseInterceptors,
+  Post, Query, UploadedFiles, UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { User } from '@supabase/supabase-js';
 import { SortStrategy } from 'src/enums';
-import { CurrentUser } from '../../decorators/user.decorator';
-import { RolesGuard } from '../../guards/role.guard';
-import { Roles } from '../../decorators/role.decorator';
-import { Role } from '../users/enums/users.enums';
+import { User } from '../../decorators/user.decorator';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';
-import { SupabaseGuard } from '../auth/guards/supabase-auth.guard';
+import { GetProductsDto } from './dto/get-products.dto';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
   @Get()
-  find() {
-    return this.productsService.find();
+  find(@Query() params: GetProductsDto) {
+    return this.productsService.find(params);
   }
 
   @Get('/favorites')
-  @UseGuards(SupabaseGuard)
   findFavorites(
     @Query('sort') sort: SortStrategy,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.findFavorites(user, sort);
+    return this.productsService.findFavorites(userId, sort);
   }
 
+  // ? Useless since we will addToSelect
   @Get('/favorites/:productId')
-  @UseGuards(SupabaseGuard)
   findFavoritesById(
     @Param('productId') productId: string,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.findFavoritesById(user, productId);
+    return this.productsService.findFavoritesById(userId, productId);
   }
 
   @Post('/favorites/:productId')
-  @UseGuards(SupabaseGuard)
   addToFavorites(
     @Param('productId') productId: string,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.addToFavorites(user, productId);
+    return this.productsService.addToFavorites(userId, productId);
   }
 
   @Delete('/favorites/:productId')
-  @UseGuards(SupabaseGuard)
   deleteFromFavorites(
     @Param('productId') productId: string,
-    @CurrentUser() user: User,
+    @User() userId: string,
   ) {
-    return this.productsService.removeFromFavorites(user, productId);
-  }
-
-  @Get('/categories/:categoryId')
-  findProductsByCategory(
-    @Param('categoryId') categoryId: string,
-    @Query('sort') sort: SortStrategy,
-  ) {
-    return this.productsService.findByCategory(categoryId, sort);
-  }
-
-  @Get('/groups/:groupId')
-  findProductsByGroup(
-    @Param('groupId') groupId: string,
-    @Query('sort') sort: SortStrategy,
-  ) {
-    return this.productsService.findByGroup(groupId, sort);
+    return this.productsService.removeFromFavorites(userId, productId);
   }
 
   @Get('/:id')
-  findById(@Param('id') id: string) {
-    return this.productsService.findById(id);
+  findById(
+    @Param('id') id: string,
+    @User() userId: string,
+  ) {
+    return this.productsService.findById(userId, id);
   }
 
+  // ! TODO: Add roles guard
   @Post()
-  @UseGuards(SupabaseGuard, RolesGuard)
-  @Roles(Role.admin)
+  // @UseGuards(RolesGuard)
+  // @Roles(Role.admin)
   @UseInterceptors(FilesInterceptor('images', 5))
   create(
     @Body() createProductDto: CreateProductDto,

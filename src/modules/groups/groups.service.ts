@@ -1,44 +1,46 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Group } from './entity/group.entity';
+import { Product } from '../products/entity/product.entity';
 
 @Injectable()
 export class GroupsService {
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(
+    @InjectRepository(Group)
+    private groupsRepository: Repository<Group>,
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
+  ) { }
 
-  async findAll() {
-    const { data: groups } = await this.databaseService.database
-      .from('groups')
-      .select('id, name')
-      .throwOnError();
+  async find() {
+    // TODO Add min price to each group
 
-    const { data: products } = await this.databaseService.database
-      .from('products')
-      .select('group_ids, price')
-      .throwOnError();
+    const [groups, products] = await Promise.all([
+      this.groupsRepository.find({
+        select: ['id', 'name'],
+      }),
+      this.productsRepository.find({
+        select: ['groupIds', 'price'],
+      }),
+    ]);
 
-    const mappedGroups = groups.map(({ id, ...group }) => ({
+    return groups.map(({ id, ...group }) => ({
       ...group,
       id,
       minPrice: products.reduce((acc, product) => {
-        if (product.group_ids.includes(id)) {
+        if (product.groupIds.includes(id)) {
           return acc < product.price ? acc : product.price;
         }
 
         return acc;
       }, Infinity),
     }));
-
-    return mappedGroups;
   }
 
   async findOne(id: string) {
-    const { data: group } = await this.databaseService.database
-      .from('groups')
-      .select()
-      .eq('id', id)
-      .single()
-      .throwOnError();
-
-    return group;
+    return this.groupsRepository.findOne({
+      where: { id },
+    });
   }
 }

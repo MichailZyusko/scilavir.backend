@@ -6,8 +6,8 @@ export class GroupsController {
   constructor(private readonly groupsService: GroupsService) { }
 
   @Get()
-  findAll() {
-    return this.groupsService.findAll();
+  find() {
+    return this.groupsService.find();
   }
 
   @Get(':id')

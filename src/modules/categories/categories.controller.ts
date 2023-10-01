@@ -6,8 +6,8 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) { }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  find() {
+    return this.categoriesService.find();
   }
 
   @Get(':id')

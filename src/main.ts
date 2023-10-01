@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { corsOptions } from './constants/cors';
 
@@ -10,7 +9,6 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('/api');
-  app.use(cookieParser());
 
   await app.listen(3001, () => console.log('[Server started on port 3001]'));
 }

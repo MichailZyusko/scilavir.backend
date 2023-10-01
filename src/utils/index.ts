@@ -1,17 +1,20 @@
+import { users } from '@clerk/clerk-sdk-node';
 import { SortStrategy } from 'src/enums';
 
 export const round = (x: number) => Math.round(x * 100) / 100;
 
-export const getSortStrategy = (sort: SortStrategy): readonly [string, { ascending: boolean }] => {
+export const getSortStrategy = (sort: SortStrategy): readonly [string, 'ASC' | 'DESC'] => {
   switch (sort) {
     case SortStrategy.ALPHABETICAL_ASC:
-      return ['name', { ascending: true }];
+      return ['name', 'ASC'];
     case SortStrategy.ALPHABETICAL_DESC:
-      return ['name', { ascending: false }];
+      return ['name', 'DESC'];
     case SortStrategy.PRICE_ASC:
-      return ['price', { ascending: true }];
+      return ['price', 'ASC'];
     case SortStrategy.PRICE_DESC:
-      return ['price', { ascending: false }];
+      return ['price', 'DESC'];
     default: throw new Error('Invalid sort strategy');
   }
 };
+
+export const getUserById = async (id: string) => users.getUser(id);

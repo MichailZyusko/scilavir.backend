@@ -1,107 +1,112 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { User } from '@supabase/supabase-js';
 import { SortStrategy } from 'src/enums';
 import { getSortStrategy } from 'src/utils';
-import { CreateProductDto } from './dto/create-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ArrayContains, FindOptionsOrder, Repository } from 'typeorm';
+import { imagesUrl } from 'src/constants';
 import { DatabaseService } from '../database/database.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { Product } from './entity/product.entity';
+import { Favorite } from './entity/favorite.entity';
+import { TProductsService } from './types';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(
+    private readonly databaseService: DatabaseService,
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
+    @InjectRepository(Favorite)
+    private favoriteRepository: Repository<Favorite>,
+  ) { }
 
-  async find() {
-    const { data } = await this.databaseService.database
-      .from('products')
-      .select()
-      .throwOnError();
+  // ! TODO: add isFavorite field for joining another table
+  async find({ categoryIds, groupIds, sort }: TProductsService.FindProducts) {
+    const order: FindOptionsOrder<Product> = {};
 
-    return data;
+    if (sort) {
+      const [column, direction] = getSortStrategy(sort);
+
+      order[column] = direction;
+    }
+
+    return this.productsRepository.find({
+      where: {
+        ...(categoryIds && { categoryIds: ArrayContains(categoryIds) }),
+        ...(groupIds && { groupIds: ArrayContains(groupIds) }),
+      },
+      order,
+    });
   }
 
-  async findById(id: string) {
-    const { data } = await this.databaseService.database
-      .from('products')
-      .select()
-      .eq('id', id)
-      .single()
-      .throwOnError();
+  async findById(userId: string, id: string) {
+    // TODO: add isFavorite field
+    return this.productsRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    // return this.productsRepository.query(`
+    //   SELECT *, (
+    //     SELECT "userId"
+    //     FROM favorites AS f
+    //     WHERE f."userId" = '${userId}' AND f."productId" = '${id}') AS "isFavorite"
+    //   FROM products AS p
+    //   WHERE p.id = '${id}'
+    // `)[0];
 
-    return data;
+    // const product = await this.productsRepository.createQueryBuilder()
+    //   .select('*')
+    //   .from(Product, 'products')
+    //   .where('products.id = :id', { id })
+    //   .addSelect(
+    //     (subQuery) => subQuery
+    //       .select('favorites.userId')
+    //       .from(Favorite, 'favorites')
+    //       .where('favorites.userId = :userId', { userId })
+    //       .andWhere('favorites.productId = :productId', { productId: id }),
+    //     'isFavorite',
+    //   )
+    //   .getOne();
   }
 
-  async findFavorites({ id }: User, sort: SortStrategy) {
+  async findFavorites(userId: string, sort: SortStrategy) {
     const [column, direction] = getSortStrategy(sort);
-    const { data } = await this.databaseService.database
-      .from('favorites')
-      .select('products (*)')
-      .eq('user_id', id)
-      .throwOnError();
 
-    return data
-      .map((item) => item.products)
-      // eslint-disable-next-line no-nested-ternary
-      .sort((a, b) => (direction.ascending
-        ? (a[column] < b[column] ? -1 : 1)
-        : (a[column] > b[column] ? -1 : 1)));
+    return this.productsRepository.createQueryBuilder()
+      .select('p')
+      .from(Product, 'p')
+      .innerJoin(Favorite, 'f', 'p.id = f.productId')
+      .where('f.userId = :userId', { userId })
+      .orderBy(`p.${column}`, direction)
+      .getMany();
   }
 
-  async findFavoritesById({ id }: User, productId: string) {
-    const { data: product } = await this.databaseService.database
-      .from('favorites')
-      .select('product_id')
-      .eq('user_id', id)
-      .eq('product_id', productId)
-      .single();
+  // ! TODO addToSelect to find by product id
+  async findFavoritesById(userId: string, productId: string) {
+    const isFavorite = await this.favoriteRepository.exist({
+      where: {
+        userId,
+        productId,
+      },
+    });
 
-    return { isFavorite: !!product };
+    return { isFavorite };
   }
 
-  async addToFavorites({ id }: User, productId: string) {
-    const { data } = await this.databaseService.database
-      .from('favorites')
-      .insert({
-        user_id: id,
-        product_id: productId,
-      })
-      .throwOnError();
-
-    return data;
+  async addToFavorites(userId: string, productId: string) {
+    return this.favoriteRepository.insert({
+      userId,
+      productId,
+    });
   }
 
-  async removeFromFavorites({ id }: User, productId: string) {
-    const { data } = await this.databaseService.database
-      .from('favorites')
-      .delete()
-      .eq('user_id', id)
-      .eq('product_id', productId)
-      .throwOnError();
-
-    return data;
-  }
-
-  async findByCategory(categoryId: string, sort: SortStrategy) {
-    const [column, direction] = getSortStrategy(sort);
-    const { data: products } = await this.databaseService.database
-      .from('products')
-      .select()
-      .contains('category_ids', [categoryId])
-      .order(column, direction)
-      .throwOnError();
-
-    return products;
-  }
-
-  async findByGroup(groupId: string, sort: SortStrategy) {
-    const [column, direction] = getSortStrategy(sort);
-    const { data: products } = await this.databaseService.database
-      .from('products')
-      .select()
-      .contains('group_ids', [groupId])
-      .order(column, direction)
-      .throwOnError();
-
-    return products;
+  async removeFromFavorites(userId: string, productId: string) {
+    return this.favoriteRepository.delete({
+      userId,
+      productId,
+    });
   }
 
   async save(createProductDto: CreateProductDto, images: Express.Multer.File[]) {
@@ -120,16 +125,14 @@ export class ProductsService {
       return data;
     }));
 
-    const { data } = await this.databaseService.database
-      .from('products')
+    return this.productsRepository
+      // TODO createProductDto contain `group_ids` & `category_ids`
       .insert({
         ...createProductDto,
         id: productId,
-        group_ids: createProductDto.group_ids.split(','),
-        category_ids: createProductDto.category_ids.split(','),
-        images: images.map((img) => `https://hljgruyjewkbrmyedjik.supabase.co/storage/v1/object/public/backets/images/${productId}/${img.originalname}`),
+        groupIds: createProductDto.group_ids.split(','),
+        categoryIds: createProductDto.category_ids.split(','),
+        images: images.map((img) => `${imagesUrl}/${productId}/${img.originalname}`),
       });
-
-    return data;
   }
 }
