@@ -31,6 +31,7 @@
     "@nestjs/platform-express": "^10.2.6",
     "@nestjs/typeorm": "^10.0.0",
     "@supabase/supabase-js": "^2.37.0",
+    "@nestjs/cli": "^10.1.18",
     "env-cmd": "^10.1.0",
     "nest-winston": "^1.9.4",
     "nodemailer": "^6.9.5",
@@ -43,7 +44,6 @@
     "winston": "^3.10.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.1.18",
     "@nestjs/jwt": "^10.1.1",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.6",
