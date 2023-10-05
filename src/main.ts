@@ -9,6 +9,7 @@ import { AppModule } from './app.module';
   });
 
   app.setGlobalPrefix('/api');
+  const port = process.env.PORT || 3001;
 
-  await app.listen(3001, () => console.log('[Server started on port 3001]'));
+  await app.listen(port, () => console.log(`[Server started on port ${port}]`));
 })();

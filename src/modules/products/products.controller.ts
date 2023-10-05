@@ -26,15 +26,6 @@ export class ProductsController {
     return this.productsService.findFavorites(userId, sort);
   }
 
-  // ? Useless since we will addToSelect
-  @Get('/favorites/:productId')
-  findFavoritesById(
-    @Param('productId') productId: string,
-    @User() userId: string,
-  ) {
-    return this.productsService.findFavoritesById(userId, productId);
-  }
-
   @Post('/favorites/:productId')
   addToFavorites(
     @Param('productId') productId: string,

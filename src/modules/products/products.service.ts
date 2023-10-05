@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, FindOptionsOrder, Repository } from 'typeorm';
+import {
+  ArrayContains, DataSource, FindOptionsOrder, Repository,
+} from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
 import { DatabaseService } from '../database/database.service';
@@ -19,6 +21,7 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
     @InjectRepository(Favorite)
     private favoriteRepository: Repository<Favorite>,
+    private dataSource: DataSource,
   ) { }
 
   // ! TODO: add isFavorite field for joining another table
@@ -41,34 +44,24 @@ export class ProductsService {
   }
 
   async findById(userId: string, id: string) {
-    // TODO: add isFavorite field
-    return this.productsRepository.findOne({
-      where: {
-        id,
-      },
-    });
-    // return this.productsRepository.query(`
-    //   SELECT *, (
-    //     SELECT "userId"
-    //     FROM favorites AS f
-    //     WHERE f."userId" = '${userId}' AND f."productId" = '${id}') AS "isFavorite"
-    //   FROM products AS p
-    //   WHERE p.id = '${id}'
-    // `)[0];
+    const product = await this.dataSource.createQueryBuilder()
+      .select('*')
+      .addSelect(
+        (subQuery) => subQuery
+          .select('f.userId')
+          .from(Favorite, 'f')
+          .where('f.userId = :userId', { userId })
+          .andWhere('f.productId = :productId', { productId: id }),
+        'isFavorite',
+      )
+      .from(Product, 'p')
+      .where('p.id = :id', { id })
+      .getRawOne();
 
-    // const product = await this.productsRepository.createQueryBuilder()
-    //   .select('*')
-    //   .from(Product, 'products')
-    //   .where('products.id = :id', { id })
-    //   .addSelect(
-    //     (subQuery) => subQuery
-    //       .select('favorites.userId')
-    //       .from(Favorite, 'favorites')
-    //       .where('favorites.userId = :userId', { userId })
-    //       .andWhere('favorites.productId = :productId', { productId: id }),
-    //     'isFavorite',
-    //   )
-    //   .getOne();
+    return {
+      ...product,
+      isFavorite: !!product.isFavorite,
+    };
   }
 
   async findFavorites(userId: string, sort: SortStrategy) {
@@ -81,18 +74,6 @@ export class ProductsService {
       .where('f.userId = :userId', { userId })
       .orderBy(`p.${column}`, direction)
       .getMany();
-  }
-
-  // ! TODO addToSelect to find by product id
-  async findFavoritesById(userId: string, productId: string) {
-    const isFavorite = await this.favoriteRepository.exist({
-      where: {
-        userId,
-        productId,
-      },
-    });
-
-    return { isFavorite };
   }
 
   async addToFavorites(userId: string, productId: string) {
