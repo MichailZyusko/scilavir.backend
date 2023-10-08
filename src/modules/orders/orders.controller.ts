@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { User } from '@decorators/user.decorator';
 import { OrdersService } from './orders.service';
 
@@ -9,5 +9,10 @@ export class OrdersController {
   @Post()
   create(@User() userId: string) {
     return this.ordersService.create(userId);
+  }
+
+  @Get('history')
+  getOrdersHistory(@User() userId: string) {
+    return this.ordersService.getOrdersHistory(userId);
   }
 }

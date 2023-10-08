@@ -1,5 +1,6 @@
+import { Product } from '@modules/products/entity/product.entity';
 import {
-  Entity, CreateDateColumn, UpdateDateColumn, PrimaryColumn, Column,
+  Entity, CreateDateColumn, UpdateDateColumn, PrimaryColumn, Column, JoinColumn, OneToOne,
 } from 'typeorm';
 
 @Entity({
@@ -8,6 +9,10 @@ import {
 export class OrderItem {
   @PrimaryColumn('uuid')
   productId: string;
+
+  @OneToOne(() => Product)
+  @JoinColumn()
+  product: Product;
 
   @PrimaryColumn('uuid')
   orderId: string;
