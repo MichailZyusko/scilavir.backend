@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  ArrayContains, DataSource, FindOptionsOrder, Repository,
+  ArrayContains, DataSource, FindOptionsOrder, Like, Repository,
 } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
@@ -25,7 +25,9 @@ export class ProductsService {
   ) { }
 
   // ! TODO: add isFavorite field for joining another table
-  async find({ categoryIds, groupIds, sort }: TProductsService.FindProducts) {
+  async find({
+    categoryIds, groupIds, sort, search,
+  }: TProductsService.FindProducts) {
     const order: FindOptionsOrder<Product> = {};
 
     if (sort) {
@@ -38,6 +40,7 @@ export class ProductsService {
       where: {
         ...(categoryIds && { categoryIds: ArrayContains(categoryIds) }),
         ...(groupIds && { groupIds: ArrayContains(groupIds) }),
+        ...(search && { name: Like(`%${search}%`) }),
       },
       order,
     });
