@@ -15,6 +15,7 @@ import { GroupsModule } from '@groups/groups.module';
 import { CartModule } from '@cart/cart.module';
 import { winstonConf } from '@constants/winston.config';
 import { HttpErrorFilter } from '@errors/http-error.filter';
+import { FeedbacksModule } from '@modules/feedbacks/feedbacks.module';
 import { AppController } from './app.controller';
 import { DatabaseModule } from './modules/database/database.module';
 
@@ -45,6 +46,7 @@ import { DatabaseModule } from './modules/database/database.module';
     GroupsModule,
     DatabaseModule,
     CartModule,
+    FeedbacksModule,
   ],
   controllers: [AppController],
   providers: [
