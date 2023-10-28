@@ -19,6 +19,11 @@ export class FeedbacksService {
   }
 
   async getFeedbacksByProductId(productId: string) {
-    return this.feedbacksRepository.find({ where: { productId } });
+    return this.feedbacksRepository.find({
+      where: { productId },
+      order: {
+        createdAt: -1,
+      },
+    });
   }
 }
