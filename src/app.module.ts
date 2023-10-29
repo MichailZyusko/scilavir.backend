@@ -1,6 +1,9 @@
 import {
   MiddlewareConsumer, Module, NestModule, RequestMethod,
 } from '@nestjs/common';
+import {
+  MiddlewareConsumer, Module, NestModule, RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
@@ -17,6 +20,7 @@ import { winstonConf } from '@constants/winston.config';
 import { HttpErrorFilter } from '@errors/http-error.filter';
 import { FeedbacksModule } from '@modules/feedbacks/feedbacks.module';
 import { AppController } from './app.controller';
+import { DatabaseModule } from './modules/database/database.module';
 import { DatabaseModule } from './modules/database/database.module';
 
 @Module({
@@ -37,11 +41,25 @@ import { DatabaseModule } from './modules/database/database.module';
       logging: ['query'],
       synchronize: true,
     }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      schema: process.env.DB_SCHEMA,
+      autoLoadEntities: true,
+      logging: ['query'],
+      synchronize: true,
+    }),
     WinstonModule.forRoot(winstonConf),
     MailModule,
     UsersModule,
     ProductsModule,
     OrdersModule,
+    CategoriesModule,
+    GroupsModule,
     CategoriesModule,
     GroupsModule,
     DatabaseModule,
@@ -56,6 +74,20 @@ import { DatabaseModule } from './modules/database/database.module';
     },
   ],
 })
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ClerkExpressRequireAuth())
+      .exclude(
+        { path: '/products', method: RequestMethod.GET },
+        { path: '/groups', method: RequestMethod.GET },
+        { path: '/categories', method: RequestMethod.GET },
+        { path: '/groups/(.*)', method: RequestMethod.GET },
+        { path: '/categories/(.*)', method: RequestMethod.GET },
+      )
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
