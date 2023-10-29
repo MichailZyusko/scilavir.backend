@@ -15,6 +15,7 @@ import { GroupsModule } from '@groups/groups.module';
 import { CartModule } from '@cart/cart.module';
 import { winstonConf } from '@constants/winston.config';
 import { HttpErrorFilter } from '@errors/http-error.filter';
+import { FeedbacksModule } from '@modules/feedbacks/feedbacks.module';
 import { AppController } from './app.controller';
 import { DatabaseModule } from './modules/database/database.module';
 
@@ -36,6 +37,18 @@ import { DatabaseModule } from './modules/database/database.module';
       logging: ['query'],
       synchronize: true,
     }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      schema: process.env.DB_SCHEMA,
+      autoLoadEntities: true,
+      logging: ['query'],
+      synchronize: true,
+    }),
     WinstonModule.forRoot(winstonConf),
     MailModule,
     UsersModule,
@@ -43,8 +56,11 @@ import { DatabaseModule } from './modules/database/database.module';
     OrdersModule,
     CategoriesModule,
     GroupsModule,
+    CategoriesModule,
+    GroupsModule,
     DatabaseModule,
     CartModule,
+    FeedbacksModule,
   ],
   controllers: [AppController],
   providers: [

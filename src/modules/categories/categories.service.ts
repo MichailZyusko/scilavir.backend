@@ -46,4 +46,14 @@ export class CategoriesService {
       select: ['id', 'name', 'parentId'],
     });
   }
+
+  async findSimilarProductsByCategoryId(id: string) {
+    return this.productsRepository.createQueryBuilder()
+      .select('p')
+      .from(Product, 'p')
+      .where('p.categoryIds @> :categoryIds', { categoryIds: [id] })
+      .orderBy('RANDOM()')
+      .limit(2)
+      .getMany();
+  }
 }

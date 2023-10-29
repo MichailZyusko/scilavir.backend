@@ -6,4 +6,6 @@ export class GetProductsDto {
   groupIds?: string[];
 
   sort?: SortStrategy;
+
+  search?: string;
 }

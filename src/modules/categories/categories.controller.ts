@@ -14,4 +14,9 @@ export class CategoriesController {
   findSubCategories(@Param('id') id: string) {
     return this.categoriesService.findSubCategories(id);
   }
+
+  @Get(':id/sample')
+  findSimilarProductsByCategoryId(@Param('id') id: string) {
+    return this.categoriesService.findSimilarProductsByCategoryId(id);
+  }
 }

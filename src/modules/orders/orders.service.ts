@@ -52,4 +52,25 @@ export class OrdersService {
 
     return orderId;
   }
+
+  async getOrdersHistory(userId: string) {
+    const orders = await this.ordersRepository.find({
+      where: { userId },
+      select: ['createdAt', 'updatedAt', 'id'],
+    });
+
+    const history = await Promise.all(orders.map(async (order) => {
+      const items = await this.orderItemsRepository.find({
+        where: { orderId: order.id },
+        relations: ['product'],
+      });
+
+      return {
+        ...order,
+        items,
+      };
+    }));
+
+    return history;
+  }
 }
