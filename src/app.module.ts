@@ -1,9 +1,6 @@
 import {
   MiddlewareConsumer, Module, NestModule, RequestMethod,
 } from '@nestjs/common';
-import {
-  MiddlewareConsumer, Module, NestModule, RequestMethod,
-} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
@@ -20,7 +17,6 @@ import { winstonConf } from '@constants/winston.config';
 import { HttpErrorFilter } from '@errors/http-error.filter';
 import { FeedbacksModule } from '@modules/feedbacks/feedbacks.module';
 import { AppController } from './app.controller';
-import { DatabaseModule } from './modules/database/database.module';
 import { DatabaseModule } from './modules/database/database.module';
 
 @Module({
@@ -74,20 +70,6 @@ import { DatabaseModule } from './modules/database/database.module';
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ClerkExpressRequireAuth())
-      .exclude(
-        { path: '/products', method: RequestMethod.GET },
-        { path: '/groups', method: RequestMethod.GET },
-        { path: '/categories', method: RequestMethod.GET },
-        { path: '/groups/(.*)', method: RequestMethod.GET },
-        { path: '/categories/(.*)', method: RequestMethod.GET },
-      )
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
-  }
-}
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
