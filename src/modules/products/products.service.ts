@@ -70,7 +70,6 @@ export class ProductsService {
     return {
       ...product,
       isFavorite: !!product?.isFavorite,
-      isFavorite: !!product?.isFavorite,
     };
   }
 
