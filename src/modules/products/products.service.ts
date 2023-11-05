@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  ArrayContains, DataSource, FindOptionsOrder, Like, Repository,
-} from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
 import { DatabaseService } from '../database/database.service';
@@ -28,22 +26,28 @@ export class ProductsService {
   async find({
     categoryIds, groupIds, sort, search,
   }: TProductsService.FindProducts) {
-    const order: FindOptionsOrder<Product> = {};
+    const qb = this.productsRepository.createQueryBuilder()
+      .select('p')
+      .from(Product, 'p');
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
-
-      order[column] = direction;
+      qb.orderBy(`p.${column}`, direction);
     }
 
-    return this.productsRepository.find({
-      where: {
-        ...(categoryIds && { categoryIds: ArrayContains(categoryIds) }),
-        ...(groupIds && { groupIds: ArrayContains(groupIds) }),
-        ...(search && { name: Like(`%${search}%`) }),
-      },
-      order,
-    });
+    if (categoryIds) {
+      qb.where('p.categoryIds && :categoryIds', { categoryIds });
+    }
+
+    if (groupIds) {
+      qb.where('p.groupIds && :groupIds', { groupIds });
+    }
+
+    if (search) {
+      qb.where('p.name LIKE :search', { search: `%${search}%` });
+    }
+
+    return qb.getMany();
   }
 
   // TODO: add feedbacks selection

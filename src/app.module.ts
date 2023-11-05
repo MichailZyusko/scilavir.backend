@@ -47,6 +47,9 @@ import { DatabaseModule } from './modules/database/database.module';
       schema: process.env.DB_SCHEMA,
       autoLoadEntities: true,
       logging: ['query'],
+      cache: {
+        duration: 60_000,
+      },
       synchronize: true,
     }),
     WinstonModule.forRoot(winstonConf),

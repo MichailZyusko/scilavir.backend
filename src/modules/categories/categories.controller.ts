@@ -10,9 +10,14 @@ export class CategoriesController {
     return this.categoriesService.find();
   }
 
+  @Get('roots')
+  findRootCategoriesWithSmallestPrice() {
+    return this.categoriesService.findRootCategoriesWithSmallestPrice();
+  }
+
   @Get(':id')
-  findSubCategories(@Param('id') id: string) {
-    return this.categoriesService.findSubCategories(id);
+  findCategory(@Param('id') id: string) {
+    return this.categoriesService.findCategory(id);
   }
 
   @Get(':id/sample')
