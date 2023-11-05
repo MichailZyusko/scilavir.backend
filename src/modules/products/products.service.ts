@@ -51,6 +51,7 @@ export class ProductsService {
   }
 
   // TODO: add feedbacks selection
+  // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
     const product = await this.dataSource.createQueryBuilder()
       .select('*')
@@ -68,6 +69,7 @@ export class ProductsService {
 
     return {
       ...product,
+      isFavorite: !!product?.isFavorite,
       isFavorite: !!product?.isFavorite,
     };
   }

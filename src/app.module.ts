@@ -35,18 +35,6 @@ import { DatabaseModule } from './modules/database/database.module';
       schema: process.env.DB_SCHEMA,
       autoLoadEntities: true,
       logging: ['query'],
-      synchronize: true,
-    }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: +process.env.DB_PORT,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      schema: process.env.DB_SCHEMA,
-      autoLoadEntities: true,
-      logging: ['query'],
       cache: {
         duration: 60_000,
       },
