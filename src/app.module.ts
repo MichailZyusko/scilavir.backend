@@ -66,6 +66,7 @@ export class AppModule implements NestModule {
     consumer
       .apply(ClerkExpressRequireAuth())
       .exclude(
+        { path: '/ping', method: RequestMethod.GET },
         { path: '/products', method: RequestMethod.GET },
         { path: '/groups', method: RequestMethod.GET },
         { path: '/categories', method: RequestMethod.GET },
