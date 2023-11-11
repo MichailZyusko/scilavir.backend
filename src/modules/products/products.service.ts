@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { getSortStrategy } from '@utils/index';
+import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
@@ -106,7 +106,7 @@ export class ProductsService {
       const { data, error } = await this.databaseService.database
         .storage
         .from('backets')
-        .upload(`images/${productId}/${image.originalname}`, image.buffer);
+        .upload(`images/${productId}/${image.originalname}`, await cropper(image.buffer));
 
       if (error) {
         console.log(error);

@@ -41,3 +41,7 @@ lerna-debug.log*
 # Files folder
 # public
 .vercel
+
+/src/images
+/src/out
+/src/cropper.ts
