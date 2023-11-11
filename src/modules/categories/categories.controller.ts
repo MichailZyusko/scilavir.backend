@@ -1,9 +1,25 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Body, Controller, Get, Param, Post, UploadedFiles, UseInterceptors,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CategoriesService } from './categories.service';
+import { CreateCategoryDto } from './dto/create-group.dto';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) { }
+
+  // ! TODO: Add roles guard
+  @Post()
+  // @UseGuards(RolesGuard)
+  // @Roles(Role.admin)
+  @UseInterceptors(FilesInterceptor('images', 1))
+  create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @UploadedFiles() images: Express.Multer.File[],
+  ) {
+    return this.categoriesService.create(createCategoryDto, images);
+  }
 
   @Get()
   find() {

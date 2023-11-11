@@ -5,7 +5,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from '@products/entity/product.entity';
 import groupBy from 'lodash.groupby';
+import { randomUUID } from 'node:crypto';
+import { cropper } from '@utils/index';
+import { imagesUrl } from '@constants/index';
+import { DatabaseService } from '@modules/database/database.service';
 import { Category } from './entity/category.entity';
+import { CreateCategoryDto } from './dto/create-group.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -14,7 +19,33 @@ export class CategoriesService {
     private categoriesRepository: Repository<Category>,
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+    private readonly databaseService: DatabaseService,
   ) { }
+
+  async create(createCategoryDto: CreateCategoryDto, images: Express.Multer.File[]) {
+    const categoryId = randomUUID();
+
+    await Promise.allSettled(images.map(async (image) => {
+      const { data, error } = await this.databaseService.database
+        .storage
+        .from('backets')
+        .upload(`images/categories/${categoryId}/${image.originalname}`, await cropper(image.buffer));
+
+      if (error) {
+        console.log(error);
+      }
+
+      return data;
+    }));
+
+    return this.categoriesRepository
+      .insert({
+        ...createCategoryDto,
+        id: categoryId,
+        parentId: createCategoryDto.parentId === 'NULL' ? null : createCategoryDto.parentId,
+        image: `${imagesUrl}/categories/${categoryId}/${images.at(0).originalname}`,
+      });
+  }
 
   async find() {
     return this.categoriesRepository.find({
@@ -26,7 +57,7 @@ export class CategoriesService {
   async findRootCategoriesWithSmallestPrice() {
     // TODO add min price to each category via SQL
     const categories = await this.categoriesRepository.find({
-      select: ['id', 'name', 'parentId'],
+      select: ['id', 'name', 'parentId', 'image'],
     });
     const nonRootCategories = categories.filter((item) => item.parentId);
     const rootCategories = categories.filter((item) => !item.parentId);

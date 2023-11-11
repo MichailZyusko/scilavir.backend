@@ -15,6 +15,10 @@ export class Group {
   @Column('text', { nullable: true })
   description: string;
 
+  // TODO: remove { nullable: true }
+  @Column('text', { nullable: true })
+  image: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

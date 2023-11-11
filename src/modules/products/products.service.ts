@@ -106,7 +106,7 @@ export class ProductsService {
       const { data, error } = await this.databaseService.database
         .storage
         .from('backets')
-        .upload(`images/${productId}/${image.originalname}`, await cropper(image.buffer));
+        .upload(`images/products/${productId}/${image.originalname}`, await cropper(image.buffer));
 
       if (error) {
         console.log(error);
@@ -122,7 +122,7 @@ export class ProductsService {
         id: productId,
         groupIds: createProductDto.group_ids.split(','),
         categoryIds: createProductDto.category_ids.split(','),
-        images: images.map((img) => `${imagesUrl}/${productId}/${img.originalname}`),
+        images: images.map((img) => `${imagesUrl}/products/${productId}/${img.originalname}`),
       });
   }
 }

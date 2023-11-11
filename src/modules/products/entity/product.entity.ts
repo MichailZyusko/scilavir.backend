@@ -9,6 +9,10 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // TODO: remove nullable later
+  @Column('int8', { nullable: true })
+  article: number;
+
   @Column('text')
   name: string;
 

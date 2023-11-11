@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '@products/entity/product.entity';
+import { randomUUID } from 'node:crypto';
+import { DatabaseService } from '@modules/database/database.service';
+import { cropper } from '@utils/index';
+import { imagesUrl } from '@constants/index';
 import { Group } from './entity/group.entity';
+import { CreateGroupDto } from './dto/create-group.dto';
 
 @Injectable()
 export class GroupsService {
@@ -11,14 +16,39 @@ export class GroupsService {
     private groupsRepository: Repository<Group>,
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
+    private readonly databaseService: DatabaseService,
   ) { }
+
+  async create(createGroupDto: CreateGroupDto, images: Express.Multer.File[]) {
+    const groupId = randomUUID();
+
+    await Promise.allSettled(images.map(async (image) => {
+      const { data, error } = await this.databaseService.database
+        .storage
+        .from('backets')
+        .upload(`images/groups/${groupId}/${image.originalname}`, await cropper(image.buffer));
+
+      if (error) {
+        console.log(error);
+      }
+
+      return data;
+    }));
+
+    return this.groupsRepository
+      .insert({
+        ...createGroupDto,
+        id: groupId,
+        image: `${imagesUrl}/groups/${groupId}/${images.at(0).originalname}`,
+      });
+  }
 
   async find() {
     // TODO Add min price to each group
 
     const [groups, products] = await Promise.all([
       this.groupsRepository.find({
-        select: ['id', 'name'],
+        select: ['id', 'name', 'image'],
       }),
       this.productsRepository.find({
         select: ['groupIds', 'price'],
