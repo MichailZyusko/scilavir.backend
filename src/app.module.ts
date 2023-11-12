@@ -38,7 +38,7 @@ import { DatabaseModule } from './modules/database/database.module';
       cache: {
         duration: 60_000,
       },
-      synchronize: true,
+      // synchronize: true,
     }),
     WinstonModule.forRoot(winstonConf),
     MailModule,

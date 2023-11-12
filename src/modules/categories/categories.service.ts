@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { cropper } from '@utils/index';
 import { imagesUrl } from '@constants/index';
 import { DatabaseService } from '@modules/database/database.service';
+import { DEFAULT_SIMILAR_PRODUCTS_COUNT } from '@constants/defaults';
 import { Category } from './entity/category.entity';
 import { CreateCategoryDto } from './dto/create-group.dto';
 
@@ -74,7 +75,7 @@ export class CategoriesService {
 
     return rootCategories.map(({ id, ...category }) => {
       const minPriceByCategory = gropedCategories[id]
-        .map(({ id: categoryId }) => products.reduce((acc, product) => {
+        ?.map(({ id: categoryId }) => products.reduce((acc, product) => {
           if (product.categoryIds.includes(categoryId)) {
             return acc < product.price ? acc : product.price;
           }
@@ -85,7 +86,9 @@ export class CategoriesService {
       return {
         ...category,
         id,
-        minPrice: Math.min(...minPriceByCategory),
+        minPrice: minPriceByCategory
+          ? Math.min(...minPriceByCategory)
+          : null,
       };
     });
   }
@@ -111,14 +114,14 @@ export class CategoriesService {
     };
   }
 
-  // TODO: exclude same products as for we are looking for
-  async findSimilarProductsByCategoryId(id: string) {
+  async findSimilarProductsByCategoryId(id: string, productId: string) {
     return this.productsRepository.createQueryBuilder()
       .select('p')
       .from(Product, 'p')
       .where('p.categoryIds @> :categoryIds', { categoryIds: [id] })
+      .andWhere('p.id != :productId', { productId })
       .orderBy('RANDOM()')
-      .limit(2)
+      .limit(DEFAULT_SIMILAR_PRODUCTS_COUNT)
       .getMany();
   }
 }

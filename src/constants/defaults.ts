@@ -1,0 +1,1 @@
+export const DEFAULT_SIMILAR_PRODUCTS_COUNT = 4;

@@ -44,7 +44,7 @@ export class GroupsService {
   }
 
   async find() {
-    // TODO Add min price to each group
+    // TODO Add min price to each group via SQL query
 
     const [groups, products] = await Promise.all([
       this.groupsRepository.find({

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
+import { Feedback } from '@modules/feedbacks/entity/feedback.entity';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
@@ -50,7 +51,6 @@ export class ProductsService {
     return qb.getMany();
   }
 
-  // TODO: add feedbacks selection
   // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
     const product = await this.dataSource.createQueryBuilder()
@@ -109,19 +109,16 @@ export class ProductsService {
         .upload(`images/products/${productId}/${image.originalname}`, await cropper(image.buffer));
 
       if (error) {
-        console.log(error);
+        console.error(error);
       }
 
       return data;
     }));
 
     return this.productsRepository
-      // TODO createProductDto contain `group_ids` & `category_ids`
       .insert({
         ...createProductDto,
         id: productId,
-        groupIds: createProductDto.group_ids.split(','),
-        categoryIds: createProductDto.category_ids.split(','),
         images: images.map((img) => `${imagesUrl}/products/${productId}/${img.originalname}`),
       });
   }

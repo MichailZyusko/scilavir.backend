@@ -7,7 +7,7 @@ export class CreateProductDto {
 
   price: number;
 
-  category_ids: string;
+  categoryIds: string[];
 
-  group_ids: string;
+  groupIds: string[];
 }
