@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
-import { Feedback } from '@modules/feedbacks/entity/feedback.entity';
+import { Cart } from '@modules/cart/entity/cart.entity';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
@@ -23,13 +23,19 @@ export class ProductsService {
     private dataSource: DataSource,
   ) { }
 
-  // ! TODO: add isFavorite field for joining another table
-  async find({
+  async find(userId: string, {
     categoryIds, groupIds, sort, search,
   }: TProductsService.FindProducts) {
-    const qb = this.productsRepository.createQueryBuilder()
-      .select('p')
-      .from(Product, 'p');
+    const qb = this.productsRepository.createQueryBuilder('p')
+      .select('*');
+
+    if (userId) {
+      qb
+        .leftJoin(Favorite, 'f', 'p.id = f.productId')
+        .addSelect('f.userId', 'f_userId')
+        .leftJoin(Cart, 'c', 'p.id = c.productId')
+        .addSelect('c.userId', 'c_userId');
+    }
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
@@ -48,7 +54,24 @@ export class ProductsService {
       qb.where('p.name LIKE :search', { search: `%${search}%` });
     }
 
-    return qb.getMany();
+    const products = await qb.getRawMany();
+
+    return products.map((product) => {
+      const {
+        f_userId: fUserId,
+        c_userId: cUserId,
+        userId: uId,
+        productId,
+        quantity,
+        ...payload
+      } = product;
+
+      return {
+        ...payload,
+        ...(fUserId && { isFavorite: true }),
+        ...(quantity && { quantity }),
+      };
+    });
   }
 
   // TODO: add feedbacks selection

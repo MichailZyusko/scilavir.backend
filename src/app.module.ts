@@ -4,7 +4,7 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
-import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
+import { ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from '@products/products.module';
 import { MailModule } from '@mail/mail.module';
@@ -38,7 +38,7 @@ import { DatabaseModule } from './modules/database/database.module';
       cache: {
         duration: 60_000,
       },
-      // synchronize: true,
+      synchronize: true,
     }),
     WinstonModule.forRoot(winstonConf),
     MailModule,
@@ -74,5 +74,9 @@ export class AppModule implements NestModule {
         { path: '/categories/(.*)', method: RequestMethod.GET },
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
+
+    consumer
+      .apply(ClerkExpressWithAuth())
+      .forRoutes({ path: '/products', method: RequestMethod.GET });
   }
 }
