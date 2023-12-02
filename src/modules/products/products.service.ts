@@ -26,6 +26,17 @@ export class ProductsService {
   async find(userId: string, {
     categoryIds, groupIds, sort, search,
   }: TProductsService.FindProducts) {
+    // const cache = productsMock.get(JSON.stringify({
+    //   ...(categoryIds?.length && { categoryIds }),
+    //   ...(groupIds?.length && { groupIds }),
+    //   ...(sort && { sort }),
+    //   ...(search && { search }),
+    // }));
+
+    // if (cache) {
+    //   return cache;
+    // }
+
     const qb = this.productsRepository.createQueryBuilder('p')
       .select('*');
 
@@ -76,23 +87,35 @@ export class ProductsService {
 
   // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
-    const product = await this.dataSource.createQueryBuilder()
-      .select('*')
-      .addSelect(
-        (subQuery) => subQuery
-          .select('f.userId')
-          .from(Favorite, 'f')
-          .where('f.userId = :userId', { userId })
-          .andWhere('f.productId = :productId', { productId: id }),
-        'isFavorite',
-      )
-      .from(Product, 'p')
+    const qb = this.productsRepository.createQueryBuilder('p')
+      .select('*');
+
+    if (userId) {
+      qb
+        .leftJoin(Favorite, 'f', 'p.id = f.productId')
+        .addSelect('f.userId', 'f_userId')
+        .leftJoin(Cart, 'c', 'p.id = c.productId')
+        .addSelect('c.userId', 'c_userId');
+    }
+
+    const product = await qb
+      // .leftJoin(Feedback, 'feedback', 'p.id = feedback.productId')
       .where('p.id = :id', { id })
       .getRawOne();
 
+    const {
+      f_userId: fUserId,
+      c_userId: cUserId,
+      userId: uId,
+      productId,
+      quantity,
+      ...payload
+    } = product;
+
     return {
-      ...product,
-      isFavorite: !!product?.isFavorite,
+      ...payload,
+      ...(fUserId && { isFavorite: true }),
+      ...(quantity && { quantity }),
     };
   }
 

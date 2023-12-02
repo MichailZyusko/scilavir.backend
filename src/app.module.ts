@@ -63,11 +63,11 @@ import { DatabaseModule } from './modules/database/database.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    // Define private routes
     consumer
       .apply(ClerkExpressRequireAuth())
       .exclude(
         { path: '/ping', method: RequestMethod.GET },
-        { path: '/products', method: RequestMethod.GET },
         { path: '/groups', method: RequestMethod.GET },
         { path: '/categories', method: RequestMethod.GET },
         { path: '/groups/(.*)', method: RequestMethod.GET },
@@ -75,8 +75,12 @@ export class AppModule implements NestModule {
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
 
+    // Define public routes
     consumer
       .apply(ClerkExpressWithAuth())
-      .forRoutes({ path: '/products', method: RequestMethod.GET });
+      .forRoutes(
+        { path: '/products', method: RequestMethod.GET },
+        { path: '/products/(.*)', method: RequestMethod.GET },
+      );
   }
 }
