@@ -51,6 +51,7 @@ export class ProductsService {
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
       qb.orderBy(`p.${column}`, direction);
+      qb.orderBy(`p.${column}`, direction);
     }
 
     if (categoryIds) {
@@ -87,6 +88,7 @@ export class ProductsService {
       });
   }
 
+  // TODO: add feedbacks selection
   // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
     const qb = this.productsRepository.createQueryBuilder('p')

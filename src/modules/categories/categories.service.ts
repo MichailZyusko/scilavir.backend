@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import {
   FindOptionsSelect, IsNull, Not, Repository,
 } from 'typeorm';
+import {
+  FindOptionsSelect, IsNull, Not, Repository,
+} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from '@products/entity/product.entity';
 import groupBy from 'lodash.groupby';
@@ -50,6 +53,7 @@ export class CategoriesService {
 
   async find() {
     return this.categoriesRepository.find({
+      where: { parentId: Not(IsNull()) },
       where: { parentId: Not(IsNull()) },
       select: ['id', 'name', 'parentId'],
     });
