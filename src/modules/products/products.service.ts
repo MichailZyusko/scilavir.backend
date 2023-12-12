@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { getSortStrategy } from '@utils/index';
+import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
+import { Cart } from '@modules/cart/entity/cart.entity';
+import _ from 'lodash';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
@@ -19,19 +21,36 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
     @InjectRepository(Favorite)
     private favoriteRepository: Repository<Favorite>,
-    private dataSource: DataSource,
   ) { }
 
-  // ! TODO: add isFavorite field for joining another table
-  async find({
+  async find(userId: string, {
     categoryIds, groupIds, sort, search,
   }: TProductsService.FindProducts) {
-    const qb = this.productsRepository.createQueryBuilder()
-      .select('p')
-      .from(Product, 'p');
+    // const cache = productsMock.get(JSON.stringify({
+    //   ...(categoryIds?.length && { categoryIds }),
+    //   ...(groupIds?.length && { groupIds }),
+    //   ...(sort && { sort }),
+    //   ...(search && { search }),
+    // }));
+
+    // if (cache) {
+    //   return cache;
+    // }
+
+    const qb = this.productsRepository.createQueryBuilder('p')
+      .select('*');
+
+    if (userId) {
+      qb
+        .leftJoin(Favorite, 'f', 'p.id = f.productId')
+        .addSelect('f.userId', 'f_userId')
+        .leftJoin(Cart, 'c', 'p.id = c.productId')
+        .addSelect('c.userId', 'c_userId');
+    }
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
+      qb.orderBy(`p.${column}`, direction);
       qb.orderBy(`p.${column}`, direction);
     }
 
@@ -47,29 +66,59 @@ export class ProductsService {
       qb.where('p.name LIKE :search', { search: `%${search}%` });
     }
 
-    return qb.getMany();
+    const products = await qb.getRawMany();
+
+    // ! FIXME delete _.uniqBy
+    return _.uniqBy(products, 'id')
+      .map((product) => {
+        const {
+          f_userId: fUserId,
+          c_userId: cUserId,
+          userId: uId,
+          productId,
+          quantity,
+          ...payload
+        } = product;
+
+        return {
+          ...payload,
+          ...(fUserId && { isFavorite: true }),
+          ...(quantity && { quantity }),
+        };
+      });
   }
 
   // TODO: add feedbacks selection
   // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
-    const product = await this.dataSource.createQueryBuilder()
-      .select('*')
-      .addSelect(
-        (subQuery) => subQuery
-          .select('f.userId')
-          .from(Favorite, 'f')
-          .where('f.userId = :userId', { userId })
-          .andWhere('f.productId = :productId', { productId: id }),
-        'isFavorite',
-      )
-      .from(Product, 'p')
+    const qb = this.productsRepository.createQueryBuilder('p')
+      .select('*');
+
+    if (userId) {
+      qb
+        .leftJoin(Favorite, 'f', 'p.id = f.productId')
+        .addSelect('f.userId', 'f_userId')
+        .leftJoin(Cart, 'c', 'p.id = c.productId')
+        .addSelect('c.userId', 'c_userId');
+    }
+
+    const product = await qb
       .where('p.id = :id', { id })
       .getRawOne();
 
+    const {
+      f_userId: fUserId,
+      c_userId: cUserId,
+      userId: uId,
+      productId,
+      quantity,
+      ...payload
+    } = product;
+
     return {
-      ...product,
-      isFavorite: !!product?.isFavorite,
+      ...payload,
+      ...(fUserId && { isFavorite: true }),
+      ...(quantity && { quantity }),
     };
   }
 
@@ -106,23 +155,20 @@ export class ProductsService {
       const { data, error } = await this.databaseService.database
         .storage
         .from('backets')
-        .upload(`images/${productId}/${image.originalname}`, image.buffer);
+        .upload(`images/products/${productId}/${image.originalname}`, await cropper(image.buffer));
 
       if (error) {
-        console.log(error);
+        console.error(error);
       }
 
       return data;
     }));
 
     return this.productsRepository
-      // TODO createProductDto contain `group_ids` & `category_ids`
       .insert({
         ...createProductDto,
         id: productId,
-        groupIds: createProductDto.group_ids.split(','),
-        categoryIds: createProductDto.category_ids.split(','),
-        images: images.map((img) => `${imagesUrl}/${productId}/${img.originalname}`),
+        images: images.map((img) => `${imagesUrl}/products/${productId}/${img.originalname}`),
       });
   }
 }

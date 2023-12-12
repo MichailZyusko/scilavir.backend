@@ -14,8 +14,11 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
   @Get()
-  find(@Query() params: GetProductsDto) {
-    return this.productsService.find(params);
+  find(
+    @Query() params: GetProductsDto,
+    @User() userId: string,
+  ) {
+    return this.productsService.find(userId, params);
   }
 
   @Get('/favorites')

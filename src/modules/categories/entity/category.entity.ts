@@ -15,6 +15,10 @@ export class Category {
   @Column('text', { nullable: true })
   description: string;
 
+  // TODO: remove { nullable: true }
+  @Column('text', { nullable: true })
+  image: string;
+
   @Column('uuid', { nullable: true })
   parentId: string;
 

@@ -1,5 +1,6 @@
+import { Feedback } from '@modules/feedbacks/entity/feedback.entity';
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany,
 } from 'typeorm';
 
 @Entity({
@@ -8,6 +9,10 @@ import {
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  // TODO: remove nullable later
+  @Column('int8', { nullable: true })
+  article: number;
 
   @Column('text')
   name: string;
@@ -20,6 +25,9 @@ export class Product {
 
   @Column('text', { array: true })
   images: string[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.product)
+  feedbacks: Feedback[];
 
   @Column('uuid', { array: true })
   groupIds: string[];

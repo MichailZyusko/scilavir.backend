@@ -1,5 +1,6 @@
+import { Product } from '@modules/products/entity/product.entity';
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne,
 } from 'typeorm';
 
 @Entity({
@@ -14,6 +15,9 @@ export class Feedback {
 
   @Column('text')
   description: string;
+
+  @ManyToOne(() => Product, (product) => product.feedbacks)
+  product: Product;
 
   @Column('uuid')
   productId: string;
