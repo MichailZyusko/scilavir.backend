@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { SortStrategy } from '@enums/index';
 import { Cart } from '@modules/cart/entity/cart.entity';
+import _ from 'lodash';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
@@ -20,7 +21,6 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
     @InjectRepository(Favorite)
     private favoriteRepository: Repository<Favorite>,
-    private dataSource: DataSource,
   ) { }
 
   async find(userId: string, {
@@ -67,22 +67,24 @@ export class ProductsService {
 
     const products = await qb.getRawMany();
 
-    return products.map((product) => {
-      const {
-        f_userId: fUserId,
-        c_userId: cUserId,
-        userId: uId,
-        productId,
-        quantity,
-        ...payload
-      } = product;
+    // ! FIXME delete _.uniqBy
+    return _.uniqBy(products, 'id')
+      .map((product) => {
+        const {
+          f_userId: fUserId,
+          c_userId: cUserId,
+          userId: uId,
+          productId,
+          quantity,
+          ...payload
+        } = product;
 
-      return {
-        ...payload,
-        ...(fUserId && { isFavorite: true }),
-        ...(quantity && { quantity }),
-      };
-    });
+        return {
+          ...payload,
+          ...(fUserId && { isFavorite: true }),
+          ...(quantity && { quantity }),
+        };
+      });
   }
 
   // TODO: add feedbacks selection
@@ -99,7 +101,6 @@ export class ProductsService {
     }
 
     const product = await qb
-      // .leftJoin(Feedback, 'feedback', 'p.id = feedback.productId')
       .where('p.id = :id', { id })
       .getRawOne();
 

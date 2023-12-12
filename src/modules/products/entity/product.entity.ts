@@ -1,5 +1,6 @@
+import { Feedback } from '@modules/feedbacks/entity/feedback.entity';
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany,
 } from 'typeorm';
 
 @Entity({
@@ -24,6 +25,9 @@ export class Product {
 
   @Column('text', { array: true })
   images: string[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.product)
+  feedbacks: Feedback[];
 
   @Column('uuid', { array: true })
   groupIds: string[];

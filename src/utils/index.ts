@@ -22,7 +22,7 @@ export const getSortStrategy = (sort: SortStrategy): readonly [string, 'ASC' | '
 export const getUserById = async (id: string) => users.getUser(id);
 
 export const cropper = (src: Buffer) => sharp(src)
-  .trim('#FFF')
+  .trim({ background: '#FFF' })
   .resize(1000, 1000, { fit: 'contain', background: '#FFF' })
   .extend({
     top: 24, bottom: 24, left: 24, right: 24, background: '#FFF',
