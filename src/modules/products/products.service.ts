@@ -4,7 +4,6 @@ import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
-import { SortStrategy } from '@enums/index';
 import { Cart } from '@modules/cart/entity/cart.entity';
 import _ from 'lodash';
 import { DatabaseService } from '../database/database.service';
@@ -24,7 +23,8 @@ export class ProductsService {
   ) { }
 
   async find(userId: string, {
-    categoryIds, groupIds, sort, search,
+    categoryIds, groupIds, sort,
+    search, limit, offset,
   }: TProductsService.FindProducts) {
     // const cache = productsMock.get(JSON.stringify({
     //   ...(categoryIds?.length && { categoryIds }),
@@ -66,6 +66,14 @@ export class ProductsService {
       qb.where('p.name LIKE :search', { search: `%${search}%` });
     }
 
+    if (limit) {
+      qb.limit(limit);
+    }
+
+    if (offset) {
+      qb.offset(offset);
+    }
+
     const products = await qb.getRawMany();
 
     // ! FIXME delete _.uniqBy
@@ -88,7 +96,6 @@ export class ProductsService {
       });
   }
 
-  // TODO: add feedbacks selection
   // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
     const qb = this.productsRepository.createQueryBuilder('p')
@@ -122,16 +129,28 @@ export class ProductsService {
     };
   }
 
-  async findFavorites(userId: string, sort: SortStrategy) {
-    const [column, direction] = getSortStrategy(sort);
-
-    return this.productsRepository.createQueryBuilder()
+  async findFavorites(userId: string, { sort, limit, offset }: TProductsService.FindFavorites) {
+    const qb = this.productsRepository.createQueryBuilder()
       .select('p')
       .from(Product, 'p')
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId })
-      .orderBy(`p.${column}`, direction)
-      .getMany();
+      .where('f.userId = :userId', { userId });
+
+    if (sort) {
+      const [column, direction] = getSortStrategy(sort);
+
+      qb.orderBy(`p.${column}`, direction);
+    }
+
+    if (limit) {
+      qb.limit(limit);
+    }
+
+    if (offset) {
+      qb.offset(offset);
+    }
+
+    return qb.getMany();
   }
 
   async addToFavorites(userId: string, productId: string) {

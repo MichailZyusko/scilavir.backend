@@ -4,10 +4,10 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { User } from '@decorators/user.decorator';
-import { SortStrategy } from '@enums/index';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';
 import { GetProductsDto } from './dto/get-products.dto';
+import { GetFavoritesDto } from './dto/get-favorites.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -23,10 +23,10 @@ export class ProductsController {
 
   @Get('/favorites')
   findFavorites(
-    @Query('sort') sort: SortStrategy,
+    @Query() params: GetFavoritesDto,
     @User() userId: string,
   ) {
-    return this.productsService.findFavorites(userId, sort);
+    return this.productsService.findFavorites(userId, params);
   }
 
   @Post('/favorites/:productId')
