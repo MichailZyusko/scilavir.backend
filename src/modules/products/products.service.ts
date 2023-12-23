@@ -34,14 +34,16 @@ export class ProductsService {
     // }));
 
     // if (cache) {
-    //   return cache;
+    //   return { count: 2, products: cache };
     // }
 
-    const qb = this.productsRepository.createQueryBuilder('p')
+    const productsQB = this.productsRepository.createQueryBuilder('p')
+      .select('*');
+    const countQB = this.productsRepository.createQueryBuilder('p')
       .select('*');
 
     if (userId) {
-      qb
+      productsQB
         .leftJoin(Favorite, 'f', 'p.id = f.productId')
         .addSelect('f.userId', 'f_userId')
         .leftJoin(Cart, 'c', 'p.id = c.productId')
@@ -50,50 +52,60 @@ export class ProductsService {
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
-      qb.orderBy(`p.${column}`, direction);
-      qb.orderBy(`p.${column}`, direction);
+
+      productsQB.orderBy(`p.${column}`, direction);
     }
 
     if (categoryIds) {
-      qb.where('p.categoryIds && :categoryIds', { categoryIds });
+      productsQB.where('p.categoryIds && :categoryIds', { categoryIds });
+      countQB.where('p.categoryIds && :categoryIds', { categoryIds });
     }
 
     if (groupIds) {
-      qb.where('p.groupIds && :groupIds', { groupIds });
+      productsQB.where('p.groupIds && :groupIds', { groupIds });
+      countQB.where('p.groupIds && :groupIds', { groupIds });
     }
 
     if (search) {
-      qb.where('p.name LIKE :search', { search: `%${search}%` });
+      productsQB.where('p.name LIKE :search', { search: `%${search}%` });
+      countQB.where('p.name LIKE :search', { search: `%${search}%` });
     }
 
     if (limit) {
-      qb.limit(limit);
+      productsQB.limit(limit);
     }
 
     if (offset) {
-      qb.offset(offset);
+      productsQB.offset(offset);
     }
 
-    const products = await qb.getRawMany();
+    // ! FIX: use getManyAndCount() instead
+    const [count, products] = await Promise.all([
+      countQB.getCount(),
+      productsQB.getRawMany(),
+    ]);
 
     // ! FIXME delete _.uniqBy
-    return _.uniqBy(products, 'id')
-      .map((product) => {
-        const {
-          f_userId: fUserId,
-          c_userId: cUserId,
-          userId: uId,
-          productId,
-          quantity,
-          ...payload
-        } = product;
+    return {
+      count,
+      data: _.uniqBy(products, 'id')
+        .map((product) => {
+          const {
+            f_userId: fUserId,
+            c_userId: cUserId,
+            userId: uId,
+            productId,
+            quantity,
+            ...payload
+          } = product;
 
-        return {
-          ...payload,
-          ...(fUserId && { isFavorite: true }),
-          ...(quantity && { quantity }),
-        };
-      });
+          return {
+            ...payload,
+            ...(fUserId && { isFavorite: true }),
+            ...(quantity && { quantity }),
+          };
+        }),
+    };
   }
 
   // TODO: add feedbacks selection
@@ -150,7 +162,12 @@ export class ProductsService {
       qb.offset(offset);
     }
 
-    return qb.getMany();
+    const [favorites, count] = await qb.getManyAndCount();
+
+    return {
+      data: favorites,
+      count,
+    };
   }
 
   async addToFavorites(userId: string, productId: string) {
