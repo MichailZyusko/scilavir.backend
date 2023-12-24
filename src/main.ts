@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { corsOptions } from '@constants/cors';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 (async () => {
@@ -9,6 +10,10 @@ import { AppModule } from './app.module';
   });
 
   app.setGlobalPrefix('/api');
+  app.useStaticAssets(join(__dirname, '..', 'static/img'), {
+    prefix: '/static/img',
+  });
+
   const port = process.env.PORT || 3001;
 
   await app.listen(port, () => console.log(`[Server started on port ${port}]`));
