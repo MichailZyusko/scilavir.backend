@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { cropper, getSortStrategy } from '@utils/index';
-import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
 import { Cart } from '@modules/cart/entity/cart.entity';
@@ -120,29 +118,8 @@ export class ProductsService {
     }
 
     const product = await qb
-    const qb = this.productsRepository.createQueryBuilder('p')
-      .select('*');
-
-    if (userId) {
-      qb
-        .leftJoin(Favorite, 'f', 'p.id = f.productId')
-        .addSelect('f.userId', 'f_userId')
-        .leftJoin(Cart, 'c', 'p.id = c.productId')
-        .addSelect('c.userId', 'c_userId');
-    }
-
-    const product = await qb
       .where('p.id = :id', { id })
       .getRawOne();
-
-    const {
-      f_userId: fUserId,
-      c_userId: cUserId,
-      userId: uId,
-      productId,
-      quantity,
-      ...payload
-    } = product;
 
     const {
       f_userId: fUserId,
@@ -220,10 +197,8 @@ export class ProductsService {
         .storage
         .from('backets')
         .upload(`images/products/${productId}/${image.originalname}`, await cropper(image.buffer));
-        .upload(`images/products/${productId}/${image.originalname}`, await cropper(image.buffer));
 
       if (error) {
-        console.error(error);
         console.error(error);
       }
 
@@ -234,7 +209,6 @@ export class ProductsService {
       .insert({
         ...createProductDto,
         id: productId,
-        images: images.map((img) => `${imagesUrl}/products/${productId}/${img.originalname}`),
         images: images.map((img) => `${imagesUrl}/products/${productId}/${img.originalname}`),
       });
   }
