@@ -94,7 +94,7 @@ export class CategoriesService {
   }
 
   async findCategory(id: string) {
-    const select = ['id', 'name'] as FindOptionsSelect<Category>;
+    const select = ['id', 'name', 'image'] as FindOptionsSelect<Category>;
     const [category, subCategories] = await Promise.all([
       this.categoriesRepository.findOne({
         where: { id },

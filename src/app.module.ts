@@ -23,7 +23,7 @@ import { DatabaseModule } from './modules/database/database.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env.prod'],
+      envFilePath: ['.env', '.env.prod'],
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

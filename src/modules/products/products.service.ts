@@ -4,9 +4,7 @@ import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
-import { SortStrategy } from '@enums/index';
 import { Cart } from '@modules/cart/entity/cart.entity';
-import _ from 'lodash';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
@@ -24,7 +22,8 @@ export class ProductsService {
   ) { }
 
   async find(userId: string, {
-    categoryIds, groupIds, sort, search,
+    categoryIds, groupIds, sort,
+    search, limit, offset,
   }: TProductsService.FindProducts) {
     // const cache = productsMock.get(JSON.stringify({
     //   ...(categoryIds?.length && { categoryIds }),
@@ -34,14 +33,16 @@ export class ProductsService {
     // }));
 
     // if (cache) {
-    //   return cache;
+    //   return { count: 2, products: cache };
     // }
 
-    const qb = this.productsRepository.createQueryBuilder('p')
+    const productsQB = this.productsRepository.createQueryBuilder('p')
+      .select('*');
+    const countQB = this.productsRepository.createQueryBuilder('p')
       .select('*');
 
     if (userId) {
-      qb
+      productsQB
         .leftJoin(Favorite, 'f', 'p.id = f.productId')
         .addSelect('f.userId', 'f_userId')
         .leftJoin(Cart, 'c', 'p.id = c.productId')
@@ -50,27 +51,41 @@ export class ProductsService {
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
-      qb.orderBy(`p.${column}`, direction);
-      qb.orderBy(`p.${column}`, direction);
+
+      productsQB.orderBy(`p.${column}`, direction);
     }
 
     if (categoryIds) {
-      qb.where('p.categoryIds && :categoryIds', { categoryIds });
+      productsQB.where('p.categoryIds && :categoryIds', { categoryIds });
+      countQB.where('p.categoryIds && :categoryIds', { categoryIds });
     }
 
     if (groupIds) {
-      qb.where('p.groupIds && :groupIds', { groupIds });
+      productsQB.where('p.groupIds && :groupIds', { groupIds });
+      countQB.where('p.groupIds && :groupIds', { groupIds });
     }
 
     if (search) {
-      qb.where('p.name LIKE :search', { search: `%${search}%` });
+      productsQB.where('p.name LIKE :search', { search: `%${search}%` });
+      countQB.where('p.name LIKE :search', { search: `%${search}%` });
     }
 
-    const products = await qb.getRawMany();
+    if (limit) {
+      productsQB.limit(limit);
+    }
 
-    // ! FIXME delete _.uniqBy
-    return _.uniqBy(products, 'id')
-      .map((product) => {
+    if (offset) {
+      productsQB.offset(offset);
+    }
+
+    const [products, count] = await Promise.all([
+      productsQB.getRawMany(),
+      countQB.getCount(),
+    ]);
+
+    return {
+      count,
+      data: products.map((product) => {
         const {
           f_userId: fUserId,
           c_userId: cUserId,
@@ -85,10 +100,10 @@ export class ProductsService {
           ...(fUserId && { isFavorite: true }),
           ...(quantity && { quantity }),
         };
-      });
+      }),
+    };
   }
 
-  // TODO: add feedbacks selection
   // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
     const qb = this.productsRepository.createQueryBuilder('p')
@@ -119,19 +134,45 @@ export class ProductsService {
       ...payload,
       ...(fUserId && { isFavorite: true }),
       ...(quantity && { quantity }),
+      ...payload,
+      ...(fUserId && { isFavorite: true }),
+      ...(quantity && { quantity }),
     };
   }
 
-  async findFavorites(userId: string, sort: SortStrategy) {
-    const [column, direction] = getSortStrategy(sort);
-
-    return this.productsRepository.createQueryBuilder()
-      .select('p')
-      .from(Product, 'p')
+  async findFavorites(userId: string, { sort, limit, offset }: TProductsService.FindFavorites) {
+    const favoritesQB = this.productsRepository.createQueryBuilder('p')
+      .select('*')
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId })
-      .orderBy(`p.${column}`, direction)
-      .getMany();
+      .where('f.userId = :userId', { userId });
+    const countQB = this.productsRepository.createQueryBuilder('p')
+      .select('*')
+      .innerJoin(Favorite, 'f', 'p.id = f.productId')
+      .where('f.userId = :userId', { userId });
+
+    if (sort) {
+      const [column, direction] = getSortStrategy(sort);
+
+      favoritesQB.orderBy(`p.${column}`, direction);
+    }
+
+    if (limit) {
+      favoritesQB.limit(limit);
+    }
+
+    if (offset) {
+      favoritesQB.offset(offset);
+    }
+
+    const [favorites, count] = await Promise.all([
+      favoritesQB.getRawMany(),
+      countQB.getCount(),
+    ]);
+
+    return {
+      data: favorites,
+      count,
+    };
   }
 
   async addToFavorites(userId: string, productId: string) {
