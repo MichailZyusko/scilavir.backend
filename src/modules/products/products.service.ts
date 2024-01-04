@@ -42,9 +42,7 @@ export class ProductsService {
       .orderBy('id');
 
     const countQB = this.productsRepository.createQueryBuilder('p')
-      .select('*')
-      .distinctOn(['id'])
-      .orderBy('id');
+      .select('*');
 
     if (userId) {
       productsQB
@@ -56,10 +54,6 @@ export class ProductsService {
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
-
-      countQB
-        .distinctOn([`p.${column}`])
-        .orderBy(`p.${column}`, direction);
 
       productsQB
         .distinctOn([`p.${column}`])
@@ -160,17 +154,11 @@ export class ProductsService {
       .orderBy('id');
     const countQB = this.productsRepository.createQueryBuilder('p')
       .select('*')
-      .distinctOn(['id'])
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId })
-      .orderBy('id');
+      .where('f.userId = :userId', { userId });
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
-
-      countQB
-        .distinctOn([`p.${column}`])
-        .orderBy(`p.${column}`, direction);
 
       favoritesQB
         .distinctOn([`p.${column}`])
