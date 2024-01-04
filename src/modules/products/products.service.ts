@@ -37,9 +37,14 @@ export class ProductsService {
     // }
 
     const productsQB = this.productsRepository.createQueryBuilder('p')
-      .select('*');
+      .select('*')
+      .distinctOn(['id'])
+      .orderBy('id');
+
     const countQB = this.productsRepository.createQueryBuilder('p')
-      .select('*');
+      .select('*')
+      .distinctOn(['id'])
+      .orderBy('id');
 
     if (userId) {
       productsQB
@@ -52,7 +57,13 @@ export class ProductsService {
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
 
-      productsQB.orderBy(`p.${column}`, direction);
+      countQB
+        .distinctOn([`p.${column}`])
+        .orderBy(`p.${column}`, direction);
+
+      productsQB
+        .distinctOn([`p.${column}`])
+        .orderBy(`p.${column}`, direction);
     }
 
     if (categoryIds) {
@@ -143,17 +154,27 @@ export class ProductsService {
   async findFavorites(userId: string, { sort, limit, offset }: TProductsService.FindFavorites) {
     const favoritesQB = this.productsRepository.createQueryBuilder('p')
       .select('*')
+      .distinctOn(['id'])
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId });
+      .where('f.userId = :userId', { userId })
+      .orderBy('id');
     const countQB = this.productsRepository.createQueryBuilder('p')
       .select('*')
+      .distinctOn(['id'])
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId });
+      .where('f.userId = :userId', { userId })
+      .orderBy('id');
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
 
-      favoritesQB.orderBy(`p.${column}`, direction);
+      countQB
+        .distinctOn([`p.${column}`])
+        .orderBy(`p.${column}`, direction);
+
+      favoritesQB
+        .distinctOn([`p.${column}`])
+        .orderBy(`p.${column}`, direction);
     }
 
     if (limit) {
