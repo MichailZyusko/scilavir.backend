@@ -4,7 +4,7 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
-import { ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
+import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from '@products/products.module';
 import { MailModule } from '@mail/mail.module';
@@ -63,24 +63,8 @@ import { DatabaseModule } from './modules/database/database.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Define private routes
-    consumer
-      .apply(ClerkExpressRequireAuth())
-      .exclude(
-        { path: '/ping', method: RequestMethod.GET },
-        { path: '/groups', method: RequestMethod.GET },
-        { path: '/categories', method: RequestMethod.GET },
-        { path: '/groups/(.*)', method: RequestMethod.GET },
-        { path: '/categories/(.*)', method: RequestMethod.GET },
-      )
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
-
-    // Define public routes
     consumer
       .apply(ClerkExpressWithAuth())
-      .forRoutes(
-        { path: '/products', method: RequestMethod.GET },
-        { path: '/products/(.*)', method: RequestMethod.GET },
-      );
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

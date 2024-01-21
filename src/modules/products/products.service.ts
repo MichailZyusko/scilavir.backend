@@ -25,17 +25,6 @@ export class ProductsService {
     categoryIds, groupIds, sort,
     search, limit, offset,
   }: TProductsService.FindProducts) {
-    // const cache = productsMock.get(JSON.stringify({
-    //   ...(categoryIds?.length && { categoryIds }),
-    //   ...(groupIds?.length && { groupIds }),
-    //   ...(sort && { sort }),
-    //   ...(search && { search }),
-    // }));
-
-    // if (cache) {
-    //   return { count: 2, products: cache };
-    // }
-
     const productsQB = this.productsRepository.createQueryBuilder('p')
       .select('*')
       .distinctOn(['id'])
@@ -48,7 +37,7 @@ export class ProductsService {
       productsQB
         .leftJoin(Favorite, 'f', 'p.id = f.productId')
         .addSelect('f.userId', 'f_userId')
-        .leftJoin(Cart, 'c', 'p.id = c.productId')
+        .leftJoin(Cart, 'c', 'p.id = c.productId AND c.userId = :userId', { userId })
         .addSelect('c.userId', 'c_userId');
     }
 
