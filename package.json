@@ -35,7 +35,6 @@
     "@supabase/supabase-js": "^2.39.0",
     "env-cmd": "^10.1.0",
     "lodash.groupby": "^4.6.0",
-    "lodash.groupby": "^4.6.0",
     "nest-winston": "^1.9.4",
     "nodemailer": "^6.9.7",
     "passport": "^0.6.0",
