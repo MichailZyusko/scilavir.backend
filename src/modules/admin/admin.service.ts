@@ -6,7 +6,8 @@ import { Repository } from 'typeorm';
 import { dirname } from 'path';
 import * as XLSX from 'xlsx';
 import { readdir, readFile } from 'fs/promises';
-import { cropper } from '@utils/index';
+import { cropper, normalizeName } from '@utils/index';
+import { imagesUrl } from '@constants/index';
 import { XLSXProduct } from './types';
 
 @Injectable()
@@ -30,45 +31,55 @@ export class AdminService {
         groupIds: JSON.parse(product.groupIds),
         categoryIds: JSON.parse(product.categoryIds),
       }));
+    console.log('🚀 ~ products:', products.length);
 
-    const items = await Promise.allSettled(products.map(async (product) => {
-      const images = await readdir(`${imagesPath}/${product.id}`);
+    const items = [];
 
-      await Promise.allSettled(images.map(async (image) => {
-        const img = await readFile(`${imagesPath}/${product.id}/${image}`);
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const product of products) {
+      try {
+        const images = await readdir(`${imagesPath}/${product.id}`);
 
-        const { data, error } = await this.databaseService.database
-          .storage
-          .from('backets')
-          .upload(`images/products/${product.id}/${image}`, await cropper(img));
+        const res = await Promise.allSettled(images.map(async (image) => {
+          try {
+            const img = await readFile(`${imagesPath}/${product.id}/${image}`);
+            const normalizedName = normalizeName(image);
 
-        if (error) {
-          console.error(error);
+            const { data, error } = await this.databaseService.database
+              .storage
+              .from('backets')
+              .upload(`images/products/${product.id}/${normalizedName}`, await cropper(img));
 
-          throw error;
+            if (error) {
+              throw error;
+            }
+
+            return data;
+          } catch (error) {
+            console.error(`product.id - ${product.id}`, error);
+
+            throw error;
+          }
+        }));
+
+        if (res.filter((item) => item.status === 'rejected').length) {
+          console.dir(res.filter((item) => item.status === 'rejected'), { depth: null });
         }
 
-        return data;
-      }));
-
-      await this.productsRepository
-        .insert({
-          ...product,
-          images: images.map((img) => `${images}/products/${product.id}/${img}`),
-        });
-    }));
+        await this.productsRepository
+          .insert({
+            ...product,
+            images: images.map((img) => `${imagesUrl}/products/${product.id}/${normalizeName(img)}`),
+          });
+      } catch (error) {
+        items.push({ productId: product.id, error });
+      }
+    }
 
     return {
-      successfulSavedItems: items.filter((item) => item.status === 'fulfilled').length,
-      failedSavedItems: items.filter((item) => item.status === 'rejected').length,
-      failedIds: items
-        .flatMap((item, idx) => {
-          if (item.status === 'rejected') {
-            return [{ id: products[idx].id, reason: item.reason }];
-          }
-
-          return [];
-        }),
+      successfulSavedItems: products.length - items.length,
+      failedSavedItems: items.length,
+      failedIds: items,
       count: products.length,
     };
   }
