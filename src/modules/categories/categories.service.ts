@@ -63,13 +63,18 @@ export class CategoriesService {
     const nonRootCategories = categories.filter((item) => item.parentId);
     const rootCategories = categories.filter((item) => !item.parentId);
 
-    const products = await this.productsRepository.createQueryBuilder()
+    const products = (await this.productsRepository.createQueryBuilder('p')
       .select('p')
-      .from(Product, 'p')
+      // .from(Product, 'p')
       .where('p.categoryIds && :categoryIds', {
         categoryIds: nonRootCategories.map(({ id }) => id),
       })
-      .getMany();
+      .getMany())
+      .filter((item) => nonRootCategories
+        .some(({ id }) => {
+          const categoryIdsSet = new Set(item.categoryIds);
+          return categoryIdsSet.has(id);
+        }));
 
     const gropedCategories = groupBy(nonRootCategories, 'parentId');
 
@@ -105,6 +110,7 @@ export class CategoriesService {
         select,
       }),
     ]);
+    console.log('🚀 ~ category:', category);
 
     return {
       category: {
