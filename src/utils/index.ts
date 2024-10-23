@@ -1,4 +1,4 @@
-import { users } from '@clerk/clerk-sdk-node';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import { SortStrategy } from '@enums/index';
 import CyrillicToTranslit from 'cyrillic-to-translit-js';
 import sharp from 'sharp';
@@ -21,7 +21,7 @@ export const getSortStrategy = (sort: SortStrategy): readonly [string, 'ASC' | '
   }
 };
 
-export const getUserById = async (id: string) => users.getUser(id);
+export const getUserById = async (id: string) => clerkClient.users.getUser(id);
 
 export const cropper = (src: Buffer) => sharp(src)
   .trim({ background: '#FFF' })
