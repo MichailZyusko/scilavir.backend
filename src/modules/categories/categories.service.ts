@@ -69,6 +69,7 @@ export class CategoriesService {
       .where('p.categoryIds && :categoryIds', {
         categoryIds: nonRootCategories.map(({ id }) => id),
       })
+      .cache(true)
       .limit(1000)
       .getMany();
 
