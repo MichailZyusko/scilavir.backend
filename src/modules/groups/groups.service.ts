@@ -6,7 +6,6 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '@modules/database/database.service';
 import { cropper } from '@utils/index';
 import { imagesUrl } from '@constants/index';
-import { groupsMock } from '@modules/groups/mock/groups.mock';
 import { Group } from './entity/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 
@@ -70,13 +69,8 @@ export class GroupsService {
   }
 
   async findOne(id: string) {
-    const cache = groupsMock.get(id);
-    if (cache) {
-      return cache;
-    }
-
-    return this.groupsRepository.findOne({
-      where: { id },
+    return this.groupsRepository.findOneByOrFail({
+      id,
     });
   }
 }
