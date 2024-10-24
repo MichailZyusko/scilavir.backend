@@ -34,10 +34,8 @@ const imports = [
     database: process.env.DB_NAME,
     schema: process.env.DB_SCHEMA,
     autoLoadEntities: true,
-    logging: ['query'],
-    cache: {
-      duration: 60_000,
-    },
+    logging: ['error'],
+    cache: true,
     ...(process.env.NODE_ENV !== 'prod' && { synchronize: true }),
   }),
   WinstonModule.forRoot(winstonConf),

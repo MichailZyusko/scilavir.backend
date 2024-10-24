@@ -33,7 +33,7 @@ export class CategoriesController {
 
   @Get(':id')
   findCategory(@Param('id') id: string) {
-    return this.categoriesService.findCategory(id);
+    return this.categoriesService.findCategoryWithSubCategories(id);
   }
 
   @Get(':id/sample')
