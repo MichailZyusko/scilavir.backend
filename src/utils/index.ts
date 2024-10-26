@@ -1,7 +1,7 @@
-import { clerkClient } from '@clerk/clerk-sdk-node';
 import { SortStrategy } from '@enums/index';
 import CyrillicToTranslit from 'cyrillic-to-translit-js';
 import sharp from 'sharp';
+import { clerkClient } from 'src/app.module';
 
 const cyrillicToTranslit = CyrillicToTranslit({ preset: 'ru' });
 
