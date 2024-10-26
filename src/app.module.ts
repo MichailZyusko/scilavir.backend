@@ -42,7 +42,7 @@ const imports = [
     autoLoadEntities: true,
     logging: ['error'],
     cache: true,
-    ...(process.env.NODE_ENV !== 'prod' && { synchronize: true }),
+    ...(process.env.NODE_ENV === 'dev' && { synchronize: true }),
   }),
   WinstonModule.forRoot(winstonConf),
   MailModule,
