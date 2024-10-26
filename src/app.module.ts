@@ -20,7 +20,7 @@ import { AdminModule } from '@modules/admin/admin.module';
 import { AppController } from './app.controller';
 import { DatabaseModule } from './modules/database/database.module';
 
-const clerkClient = createClerkClient({
+export const clerkClient = createClerkClient({
   publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
   secretKey: process.env.CLERK_SECRET_KEY,
   apiUrl: process.env.CLERK_API_URL,

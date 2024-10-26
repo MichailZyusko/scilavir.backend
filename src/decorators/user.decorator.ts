@@ -1,10 +1,10 @@
-import { RequireAuthProp } from '@clerk/clerk-sdk-node';
+import { ExpressRequestWithAuth } from '@clerk/express';
 import { PRIVATE_ROUTES } from '@constants/routes';
 import { createParamDecorator, UnauthorizedException, type ExecutionContext } from '@nestjs/common';
 
 export const User = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
-    const req: RequireAuthProp<Request> = context.switchToHttp().getRequest();
+    const req: ExpressRequestWithAuth = context.switchToHttp().getRequest();
     const { userId } = req?.auth || {};
 
     if (!userId && PRIVATE_ROUTES.has(req.url)) {
