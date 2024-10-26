@@ -43,5 +43,7 @@ lerna-debug.log*
 .vercel
 
 /src/images
+/src/excel*
 /src/out
 /src/cropper.ts
+/src/excel

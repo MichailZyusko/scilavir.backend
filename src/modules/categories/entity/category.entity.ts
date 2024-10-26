@@ -1,5 +1,8 @@
 import {
   Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 @Entity({
@@ -21,6 +24,13 @@ export class Category {
 
   @Column('uuid', { nullable: true })
   parentId: string;
+
+  @ManyToOne(() => Category, (category) => category.subCategories)
+  @JoinColumn({ name: 'parentId' })
+  parent: Category;
+
+  @OneToMany(() => Category, (category) => category.parent)
+  subCategories: Category[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -25,19 +25,11 @@ export class ProductsService {
     categoryIds, groupIds, sort,
     search, limit, offset,
   }: TProductsService.FindProducts) {
-    // const cache = productsMock.get(JSON.stringify({
-    //   ...(categoryIds?.length && { categoryIds }),
-    //   ...(groupIds?.length && { groupIds }),
-    //   ...(sort && { sort }),
-    //   ...(search && { search }),
-    // }));
-
-    // if (cache) {
-    //   return { count: 2, products: cache };
-    // }
-
     const productsQB = this.productsRepository.createQueryBuilder('p')
-      .select('*');
+      .select('*')
+      .distinctOn(['id'])
+      .orderBy('id');
+
     const countQB = this.productsRepository.createQueryBuilder('p')
       .select('*');
 
@@ -45,14 +37,16 @@ export class ProductsService {
       productsQB
         .leftJoin(Favorite, 'f', 'p.id = f.productId')
         .addSelect('f.userId', 'f_userId')
-        .leftJoin(Cart, 'c', 'p.id = c.productId')
+        .leftJoin(Cart, 'c', 'p.id = c.productId AND c.userId = :userId', { userId })
         .addSelect('c.userId', 'c_userId');
     }
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
 
-      productsQB.orderBy(`p.${column}`, direction);
+      productsQB
+        .distinctOn([`p.${column}`])
+        .orderBy(`p.${column}`, direction);
     }
 
     if (categoryIds) {
@@ -143,8 +137,10 @@ export class ProductsService {
   async findFavorites(userId: string, { sort, limit, offset }: TProductsService.FindFavorites) {
     const favoritesQB = this.productsRepository.createQueryBuilder('p')
       .select('*')
+      .distinctOn(['id'])
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId });
+      .where('f.userId = :userId', { userId })
+      .orderBy('id');
     const countQB = this.productsRepository.createQueryBuilder('p')
       .select('*')
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
@@ -153,7 +149,9 @@ export class ProductsService {
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
 
-      favoritesQB.orderBy(`p.${column}`, direction);
+      favoritesQB
+        .distinctOn([`p.${column}`])
+        .orderBy(`p.${column}`, direction);
     }
 
     if (limit) {

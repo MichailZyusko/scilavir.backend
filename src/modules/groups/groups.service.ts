@@ -6,7 +6,6 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '@modules/database/database.service';
 import { cropper } from '@utils/index';
 import { imagesUrl } from '@constants/index';
-import { groupsMock } from '@modules/groups/mock/groups.mock';
 import { Group } from './entity/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 
@@ -15,8 +14,6 @@ export class GroupsService {
   constructor(
     @InjectRepository(Group)
     private groupsRepository: Repository<Group>,
-    @InjectRepository(Product)
-    private productsRepository: Repository<Product>,
     private readonly databaseService: DatabaseService,
   ) { }
 
@@ -45,38 +42,27 @@ export class GroupsService {
   }
 
   async find() {
-    // TODO Add min price to each group via SQL query
+    const groups = await this.groupsRepository
+      .createQueryBuilder('g')
+      .select('g.id', 'id')
+      .addSelect('g.name', 'name')
+      .addSelect('g.image', 'image')
+      .addSelect('MIN(p.price)', 'minPrice')
+      .leftJoin(Product, 'p', 'g.id = ANY(p."groupIds")')
+      .groupBy('g.id')
+      .addGroupBy('g.name')
+      .addGroupBy('g.image')
+      .getRawMany();
 
-    const [groups, products] = await Promise.all([
-      this.groupsRepository.find({
-        select: ['id', 'name', 'image'],
-      }),
-      this.productsRepository.find({
-        select: ['groupIds', 'price'],
-      }),
-    ]);
-
-    return groups.map(({ id, ...group }) => ({
+    return groups.map((group) => ({
       ...group,
-      id,
-      minPrice: products.reduce((acc, product) => {
-        if (product.groupIds.includes(id)) {
-          return acc < product.price ? acc : product.price;
-        }
-
-        return acc;
-      }, Infinity),
+      minPrice: group.minPrice
+        ? parseFloat(group.minPrice)
+        : null,
     }));
   }
 
   async findOne(id: string) {
-    const cache = groupsMock.get(id);
-    if (cache) {
-      return cache;
-    }
-
-    return this.groupsRepository.findOne({
-      where: { id },
-    });
+    return this.groupsRepository.findOneByOrFail({ id });
   }
 }

@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import {
-  FindOptionsSelect, IsNull, Not, Repository,
-} from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from '@products/entity/product.entity';
-import groupBy from 'lodash.groupby';
 import { randomUUID } from 'node:crypto';
 import { cropper } from '@utils/index';
 import { imagesUrl } from '@constants/index';
@@ -56,62 +53,38 @@ export class CategoriesService {
   }
 
   async findRootCategoriesWithSmallestPrice() {
-    // TODO add min price to each category via SQL
-    const categories = await this.categoriesRepository.find({
-      select: ['id', 'name', 'parentId', 'image'],
-    });
-    const nonRootCategories = categories.filter((item) => item.parentId);
-    const rootCategories = categories.filter((item) => !item.parentId);
+    const categories = await this.categoriesRepository
+      .createQueryBuilder('rc')
+      .select('rc.id', 'id')
+      .addSelect('rc.name', 'name')
+      .addSelect('rc.image', 'image')
+      .addSelect('rc.description', 'description')
+      .addSelect('MIN(p.price)', 'minPrice')
+      .innerJoin('categories', 'c', 'c."parentId" = rc.id')
+      .innerJoin('products', 'p', 'c.id = ANY(p."categoryIds")')
+      .where('rc."parentId" IS NULL')
+      .groupBy('rc.id')
+      .addGroupBy('rc.name')
+      .addGroupBy('rc.image')
+      .addGroupBy('rc.description')
+      .getRawMany();
 
-    const products = await this.productsRepository.createQueryBuilder()
-      .select('p')
-      .from(Product, 'p')
-      .where('p.categoryIds && :categoryIds', {
-        categoryIds: nonRootCategories.map(({ id }) => id),
-      })
-      .getMany();
-
-    const gropedCategories = groupBy(nonRootCategories, 'parentId');
-
-    return rootCategories.map(({ id, ...category }) => {
-      const minPriceByCategory = gropedCategories[id]
-        ?.map(({ id: categoryId }) => products.reduce((acc, product) => {
-          if (product.categoryIds.includes(categoryId)) {
-            return acc < product.price ? acc : product.price;
-          }
-
-          return acc;
-        }, Infinity));
-
-      return {
-        ...category,
-        id,
-        minPrice: minPriceByCategory
-          ? Math.min(...minPriceByCategory)
-          : null,
-      };
-    });
+    return categories.map((category) => ({
+      ...category,
+      minPrice: category.minPrice
+        ? parseFloat(category.minPrice)
+        : null,
+    }));
   }
 
-  async findCategory(id: string) {
-    const select = ['id', 'name', 'image'] as FindOptionsSelect<Category>;
-    const [category, subCategories] = await Promise.all([
-      this.categoriesRepository.findOne({
-        where: { id },
-        select,
-      }),
-      this.categoriesRepository.find({
-        where: { parentId: id },
-        select,
-      }),
-    ]);
+  async findCategoryWithSubCategories(id: string) {
+    const category = await this.categoriesRepository.findOne({
+      where: { id },
+      relations: ['subCategories'],
+      select: ['id', 'name', 'image', 'subCategories'],
+    });
 
-    return {
-      category: {
-        ...category,
-        subCategories,
-      },
-    };
+    return { category };
   }
 
   async findSimilarProductsByCategoryId(id: string, productId: string) {

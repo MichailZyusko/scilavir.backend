@@ -1,6 +1,7 @@
 import { Feedback } from '@modules/feedbacks/entity/feedback.entity';
 import {
   Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany,
+  Index,
 } from 'typeorm';
 
 @Entity({
@@ -10,9 +11,8 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // TODO: remove nullable later
-  @Column('int8', { nullable: true })
-  article: number;
+  @Column('text', { nullable: true })
+  article: string;
 
   @Column('text')
   name: string;
@@ -29,9 +29,11 @@ export class Product {
   @OneToMany(() => Feedback, (feedback) => feedback.product)
   feedbacks: Feedback[];
 
+  @Index()
   @Column('uuid', { array: true })
   groupIds: string[];
 
+  @Index()
   @Column('uuid', { array: true })
   categoryIds: string[];
 

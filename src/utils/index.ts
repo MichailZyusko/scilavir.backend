@@ -1,7 +1,9 @@
-import { users } from '@clerk/clerk-sdk-node';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import { SortStrategy } from '@enums/index';
-
+import CyrillicToTranslit from 'cyrillic-to-translit-js';
 import sharp from 'sharp';
+
+const cyrillicToTranslit = CyrillicToTranslit({ preset: 'ru' });
 
 export const round = (x: number) => Math.round(x * 100) / 100;
 
@@ -19,7 +21,7 @@ export const getSortStrategy = (sort: SortStrategy): readonly [string, 'ASC' | '
   }
 };
 
-export const getUserById = async (id: string) => users.getUser(id);
+export const getUserById = async (id: string) => clerkClient.users.getUser(id);
 
 export const cropper = (src: Buffer) => sharp(src)
   .trim({ background: '#FFF' })
@@ -29,3 +31,8 @@ export const cropper = (src: Buffer) => sharp(src)
   })
   .webp()
   .toBuffer();
+
+export const normalizeName = (name: string) => cyrillicToTranslit
+  .transform(name)
+  .toLowerCase()
+  .replaceAll(/[`~!@#$%^&*()_|+\-№=?;:'",.<>]/gi, '');
