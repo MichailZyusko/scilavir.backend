@@ -4,7 +4,7 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
-import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
+import { clerkMiddleware, createClerkClient } from '@clerk/express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from '@products/products.module';
 import { MailModule } from '@mail/mail.module';
@@ -19,6 +19,12 @@ import { FeedbacksModule } from '@modules/feedbacks/feedbacks.module';
 import { AdminModule } from '@modules/admin/admin.module';
 import { AppController } from './app.controller';
 import { DatabaseModule } from './modules/database/database.module';
+
+const clerkClient = createClerkClient({
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+  secretKey: process.env.CLERK_SECRET_KEY,
+  apiUrl: process.env.CLERK_API_URL,
+});
 
 const imports = [
   ConfigModule.forRoot({
@@ -66,7 +72,7 @@ const imports = [
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(ClerkExpressWithAuth())
+      .apply(clerkMiddleware({ clerkClient, debug: true }))
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
