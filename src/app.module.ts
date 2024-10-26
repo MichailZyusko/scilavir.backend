@@ -56,7 +56,7 @@ const imports = [
   DatabaseModule,
   CartModule,
   FeedbacksModule,
-  ...(process.env.NODE_ENV !== 'prod' ? [AdminModule] : []),
+  ...(process.env.NODE_ENV === 'dev' ? [AdminModule] : []),
 ];
 
 @Module({
