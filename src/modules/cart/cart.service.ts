@@ -42,6 +42,7 @@ export class CartService {
         userId,
       },
       relations: ['product'],
+      order: { createdAt: 'ASC' },
       select: ['quantity'],
     });
   }
