@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { cropper, getSortStrategy } from '@utils/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { imagesUrl } from '@constants/index';
-import { Cart } from '@modules/cart/entity/cart.entity';
+import { Feedback } from '@modules/feedbacks/entity/feedback.entity';
 import { DatabaseService } from '../database/database.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from './entity/product.entity';
@@ -21,150 +21,149 @@ export class ProductsService {
     private favoriteRepository: Repository<Favorite>,
   ) { }
 
-  async find(userId: string, {
-    categoryIds, groupIds, sort,
-    search, limit, offset,
-  }: TProductsService.FindProducts) {
-    const productsQB = this.productsRepository.createQueryBuilder('p')
-      .select('*')
-      .distinctOn(['id'])
-      .orderBy('id');
+  async find(userId: string, params: TProductsService.FindProducts) {
+    const {
+      categoryIds, groupIds, sort, ids, search, limit = 12, offset = 0,
+    } = params;
 
-    const countQB = this.productsRepository.createQueryBuilder('p')
-      .select('*');
+    const baseQB = this.productsRepository.createQueryBuilder('p')
+      .select([
+        'p.id AS id', 'p.name AS name', 'p.price AS price', 'p.images AS images',
+      ]);
 
     if (userId) {
-      productsQB
-        .leftJoin(Favorite, 'f', 'p.id = f.productId')
-        .addSelect('f.userId', 'f_userId')
-        .leftJoin(Cart, 'c', 'p.id = c.productId AND c.userId = :userId', { userId })
-        .addSelect('c.userId', 'c_userId');
+      baseQB
+        .leftJoin(Favorite, 'f', 'p.id = f.productId AND f.userId = :userId', { userId })
+        .addSelect('f.userId', 'f_userId');
+
+      // TODO: uncomment when cart will be implemented
+      // .leftJoin(Cart, 'c', 'p.id = c.productId AND c.userId = :userId', { userId })
+      // .addSelect('c.userId', 'c_userId');
+    }
+
+    if (categoryIds) {
+      baseQB.andWhere('p.categoryIds && :categoryIds', { categoryIds });
+    }
+
+    if (groupIds) {
+      baseQB.andWhere('p.groupIds && :groupIds', { groupIds });
+    }
+
+    if (ids) {
+      baseQB.andWhere('p.id = ANY(:ids)', { ids });
+    }
+
+    if (search) {
+      baseQB.andWhere('p.name LIKE :search', { search: `%${search}%` });
     }
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
 
-      productsQB
-        .distinctOn([`p.${column}`])
-        .orderBy(`p.${column}`, direction);
-    }
-
-    if (categoryIds) {
-      productsQB.where('p.categoryIds && :categoryIds', { categoryIds });
-      countQB.where('p.categoryIds && :categoryIds', { categoryIds });
-    }
-
-    if (groupIds) {
-      productsQB.where('p.groupIds && :groupIds', { groupIds });
-      countQB.where('p.groupIds && :groupIds', { groupIds });
-    }
-
-    if (search) {
-      productsQB.where('p.name LIKE :search', { search: `%${search}%` });
-      countQB.where('p.name LIKE :search', { search: `%${search}%` });
-    }
-
-    if (limit) {
-      productsQB.limit(limit);
-    }
-
-    if (offset) {
-      productsQB.offset(offset);
+      baseQB.orderBy(`p.${column}`, direction);
     }
 
     const [products, count] = await Promise.all([
-      productsQB.getRawMany(),
-      countQB.getCount(),
+      baseQB
+        .take(limit)
+        .skip(offset)
+        .getRawMany(),
+      baseQB.getCount(),
     ]);
 
+    // TODO: remove comments once cart will be implemented
     return {
       count,
       data: products.map((product) => {
         const {
           f_userId: fUserId,
-          c_userId: cUserId,
+          // c_userId: cUserId,
           userId: uId,
           productId,
-          quantity,
+          // quantity,
           ...payload
         } = product;
 
         return {
           ...payload,
           ...(fUserId && { isFavorite: true }),
-          ...(quantity && { quantity }),
+          // ...(quantity && { quantity }),
         };
       }),
     };
   }
 
-  // TODO: add feedbacks selection
   async findById(userId: string, id: string) {
-    const qb = this.productsRepository.createQueryBuilder('p')
-      .select('*');
+    const results = await this.productsRepository.createQueryBuilder('p')
+      .select([
+        'p.id AS id',
+        'p.name AS name',
+        'p.price AS price',
+        'p.images AS images',
+        'p.description AS description',
+        'p.categoryIds AS categoryIds',
+        'p.article AS article',
+        'f.userId AS f_userId',
+        'fb.id AS fb_id',
+        'fb.title AS fb_title',
+        'fb.description AS fb_description',
+        'fb.rating AS fb_rating',
+      ])
+      .leftJoin(Favorite, 'f', 'f.productId = p.id AND f.userId = :userId', { userId })
+      .leftJoin(Feedback, 'fb', 'fb.productId = p.id')
+      .where('p.id = :id', { id })
+      .getRawMany();
 
-    if (userId) {
-      qb
-        .leftJoin(Favorite, 'f', 'p.id = f.productId')
-        .addSelect('f.userId', 'f_userId')
-        .leftJoin(Cart, 'c', 'p.id = c.productId')
-        .addSelect('c.userId', 'c_userId');
+    if (results.length === 0) {
+      throw new NotFoundException(`Product with id ${id} not found`);
     }
 
-    const product = await qb
-      .where('p.id = :id', { id })
-      .getRawOne();
-
-    const {
-      f_userId: fUserId,
-      c_userId: cUserId,
-      userId: uId,
-      productId,
-      quantity,
-      ...payload
-    } = product;
+    const [firstResult] = results;
+    const feedbacks = results
+      .filter((result) => result.fb_id)
+      .map((result) => ({
+        id: result.fb_id,
+        title: result.fb_title,
+        description: result.fb_description,
+        rating: result.fb_rating,
+      }));
 
     return {
-      ...payload,
-      ...(fUserId && { isFavorite: true }),
-      ...(quantity && { quantity }),
-      ...payload,
-      ...(fUserId && { isFavorite: true }),
-      ...(quantity && { quantity }),
+      id: firstResult.id,
+      name: firstResult.name,
+      price: firstResult.price,
+      images: firstResult.images,
+      description: firstResult.description,
+      categoryIds: firstResult.categoryids,
+      article: firstResult.article,
+      isFavorite: !!firstResult.f_userid,
+      feedbacks,
     };
   }
 
-  async findFavorites(userId: string, { sort, limit, offset }: TProductsService.FindFavorites) {
-    const favoritesQB = this.productsRepository.createQueryBuilder('p')
-      .select('*')
-      .distinctOn(['id'])
-      .innerJoin(Favorite, 'f', 'p.id = f.productId')
-      .where('f.userId = :userId', { userId })
-      .orderBy('id');
-    const countQB = this.productsRepository.createQueryBuilder('p')
-      .select('*')
+  async findFavorites(
+    userId: string,
+    { sort, limit = 12, offset = 0 }: TProductsService.FindFavorites,
+  ) {
+    const qb = this.productsRepository.createQueryBuilder('p')
+      .select([
+        'p.id AS id', 'p.name AS name', 'p.price AS price', 'p.images AS images',
+      ])
       .innerJoin(Favorite, 'f', 'p.id = f.productId')
       .where('f.userId = :userId', { userId });
 
     if (sort) {
       const [column, direction] = getSortStrategy(sort);
 
-      favoritesQB
-        .distinctOn([`p.${column}`])
-        .orderBy(`p.${column}`, direction);
-    }
-
-    if (limit) {
-      favoritesQB.limit(limit);
-    }
-
-    if (offset) {
-      favoritesQB.offset(offset);
+      qb.orderBy(`p.${column}`, direction);
     }
 
     const [favorites, count] = await Promise.all([
-      favoritesQB.getRawMany(),
-      countQB.getCount(),
+      qb
+        .take(limit)
+        .skip(offset)
+        .getRawMany(),
+      qb.getCount(),
     ]);
 
     return {
