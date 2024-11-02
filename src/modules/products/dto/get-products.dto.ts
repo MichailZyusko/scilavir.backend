@@ -6,6 +6,8 @@ export class GetProductsDto extends PaginationDto {
 
   groupIds?: string[];
 
+  ids?: string[];
+
   sort?: SortStrategy;
 
   search?: string;
