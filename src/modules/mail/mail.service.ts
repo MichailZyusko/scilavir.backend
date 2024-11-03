@@ -36,18 +36,18 @@ ${JSON.stringify(orderDetails, null, 2).trim()}
         </p>
         <div style="float: left;">
           ${cart
-            .map((product) => {
-              const { quantity } = product;
-              const ProductTemplate = `
+          .map((product) => {
+            const { quantity } = product;
+            const ProductTemplate = `
                   <p>${product.name} x${quantity}</p>
                   <p>Price: ${round(product.price * quantity)} Br</p>
                   <img src="${product.images[0]}" width="100" height="100" alt="${product.name}" />
                 `;
 
-              return ProductTemplate;
-            })
-            .join('<br />')
-          }
+            return ProductTemplate;
+          })
+          .join('<br />')
+        }
         </div>
         <div style="clear: both; margin-top: 20px;">
           <p>Order Summary:</p>
