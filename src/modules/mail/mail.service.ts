@@ -6,6 +6,7 @@ import { SCILAVIR_EMAIL } from '@constants/index';
 import { Product } from '@modules/products/entity/product.entity';
 import { TOrderDetails } from '@modules/orders/types';
 
+
 type CartItem = Pick<Product, 'id' | 'images' | 'name' | 'price'> & { quantity: number };
 
 type TOrder = {
