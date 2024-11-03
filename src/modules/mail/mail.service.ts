@@ -4,43 +4,39 @@ import { round } from '@utils/index';
 import { User } from '@clerk/backend';
 import { SCILAVIR_EMAIL } from '@constants/index';
 import { Product } from '@modules/products/entity/product.entity';
+import { TOrderDetails } from '@modules/orders/types';
+
 
 type CartItem = Pick<Product, 'id' | 'images' | 'name' | 'price'> & { quantity: number };
 
 type TOrder = {
   user: User;
   cart: CartItem[];
+  orderDetails: TOrderDetails;
 };
 
 @Injectable()
 export class MailService {
   constructor(private mailerService: MailerService) { }
 
-  private userDTO(user: User) {
-    return {
-      email: user?.emailAddresses?.[0]?.emailAddress,
-      phone: user?.phoneNumbers?.[0]?.phoneNumber,
-      image: user?.imageUrl,
-      firstName: user?.firstName,
-      lastName: user?.lastName,
-    };
-  }
+  async sendNewOrderAlert({ user, cart, orderDetails }: TOrder) {
+    const userImage = user?.imageUrl;
 
-  async sendNewOrderAlert({ user, cart }: TOrder) {
-    const { image, ...userDto } = this.userDTO(user);
     await this.mailerService.sendMail({
       to: SCILAVIR_EMAIL,
       subject: 'New order in web app',
       html: `
-        <div>
-          <p>
-            <img src="${image}" width="100" height="100" alt="User image" style="float: right;" />
-            <pre>
-${JSON.stringify(userDto, null, 2).trim()}
-            </pre>
-          </p>
-          <div style="float: left;">
-            ${cart
+      <div>
+        <p>
+          <img src="${userImage}" width="100" height="100" alt="User image" style="float: right;" />
+          <br />
+          <p>Order details:</p>
+          <pre>
+${JSON.stringify(orderDetails, null, 2).trim()}
+          </pre>
+        </p>
+        <div style="float: left;">
+          ${cart
           .map((product) => {
             const { quantity } = product;
             const ProductTemplate = `
@@ -53,8 +49,13 @@ ${JSON.stringify(userDto, null, 2).trim()}
           })
           .join('<br />')
         }
-          </div>
         </div>
+        <div style="clear: both; margin-top: 20px;">
+          <p>Order Summary:</p>
+          <p>Total Items: ${cart.reduce((sum, item) => sum + item.quantity, 0)}</p>
+          <p>Total Price: ${round(cart.reduce((sum, item) => sum + (item.price * item.quantity), 0))} Br</p>
+        </div>
+      </div>
       `,
     });
   }

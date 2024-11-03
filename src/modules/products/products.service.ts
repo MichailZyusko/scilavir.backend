@@ -54,7 +54,8 @@ export class ProductsService {
     }
 
     if (search) {
-      baseQB.andWhere('p.name LIKE :search', { search: `%${search}%` });
+      // ? NOTE: should be installed `CREATE EXTENSION pg_trgm;`
+      baseQB.andWhere(':search % ANY(STRING_TO_ARRAY(name, \' \'))', { search });
     }
 
     if (sort) {
