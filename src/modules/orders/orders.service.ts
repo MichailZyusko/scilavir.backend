@@ -23,7 +23,7 @@ export class OrdersService {
   async create(userId: string, createOrderDto: CreateOrderDto) {
     const user = await getUserById(userId);
 
-    const cart = await this.productsRepository.find({
+    const productsFromCart = await this.productsRepository.find({
       where: { id: In(Object.keys(createOrderDto.cart)) },
       select: ['id', 'price', 'images', 'name'],
     });
@@ -31,11 +31,11 @@ export class OrdersService {
     const { raw: [{ id: orderId }] } = await this.ordersRepository.createQueryBuilder()
       .insert()
       .into('orders')
-      .values({ userId })
+      .values({ userId, orderDetails: createOrderDto.orderDetails })
       .returning(['id'])
       .execute();
 
-    await this.orderItemsRepository.insert(cart.map(({ id, price }) => {
+    await this.orderItemsRepository.insert(productsFromCart.map(({ id, price }) => {
       const quantity = createOrderDto.cart[id];
 
       return {
@@ -48,10 +48,11 @@ export class OrdersService {
 
     await this.mailService.sendNewOrderAlert({
       user,
-      cart: cart.map((product) => ({
+      cart: productsFromCart.map((product) => ({
         ...product,
         quantity: createOrderDto.cart[product.id],
       })),
+      orderDetails: createOrderDto.orderDetails,
     });
 
     // TODO: uncomment this block after implementing the cart feature

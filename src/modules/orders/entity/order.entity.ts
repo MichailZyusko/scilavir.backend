@@ -12,6 +12,9 @@ export class Order {
   @Column()
   userId: string;
 
+  @Column({ type: 'json' })
+  orderDetails: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
