@@ -35,6 +35,7 @@ export class AdminService {
 
     const items = [];
 
+    let i = 0;
     // eslint-disable-next-line no-restricted-syntax
     for await (const product of products) {
       try {
@@ -71,6 +72,9 @@ export class AdminService {
             ...product,
             images: images.map((img) => `${imagesUrl}/products/${product.id}/${normalizeName(img)}`),
           });
+
+        i += 1;
+        console.log(`progress: ${i}/${products.length} - ${product.id} (${(i / products.length) * 100}%)`);
       } catch (error) {
         items.push({ productId: product.id, error });
       }
