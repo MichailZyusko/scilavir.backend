@@ -44,12 +44,17 @@ export class AdminService {
         const res = await Promise.allSettled(images.map(async (image) => {
           try {
             const img = await readFile(`${imagesPath}/${product.id}/${image}`);
-            const normalizedName = normalizeName(image);
+            const imgWithoutExt = image.split('.').slice(0, -1).join('.');
+            const normalizedName = `${normalizeName(imgWithoutExt)}.webp`;
 
             const { data, error } = await this.databaseService.database
               .storage
               .from('backets')
-              .upload(`images/products/${product.id}/${normalizedName}`, await cropper(img));
+              .upload(
+                `images/products/${product.id}/${normalizedName}`,
+                await cropper(img),
+                { contentType: 'image/webp' },
+              );
 
             if (error) {
               throw error;
@@ -70,13 +75,21 @@ export class AdminService {
         await this.productsRepository
           .insert({
             ...product,
-            images: images.map((img) => `${imagesUrl}/products/${product.id}/${normalizeName(img)}`),
+            images: images.map((img) => {
+              const imgWithoutExt = img.split('.').slice(0, -1).join('.');
+              const normalizedName = `${normalizeName(imgWithoutExt)}.webp`;
+
+              return `${imagesUrl}/products/${product.id}/${normalizedName}`;
+            }),
           });
 
         i += 1;
         console.log(`progress: ${i}/${products.length} - ${product.id} (${(i / products.length) * 100}%)`);
       } catch (error) {
         items.push({ productId: product.id, error });
+      } finally {
+        i += 1;
+        console.log(`progress: ${i}/${products.length} - ${product.id} (${(i / products.length) * 100}%)`);
       }
     }
 
